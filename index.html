@@ -280,6 +280,21 @@
         .check-warning { color: var(--warning); }
         .check-safe { color: var(--success); }
 
+        .function-list {
+            margin-top: 8px;
+            font-size: 13px;
+            color: #aaa;
+        }
+
+        .function-list span {
+            display: inline-block;
+            background: rgba(255,255,255,0.1);
+            padding: 3px 8px;
+            border-radius: 6px;
+            margin: 3px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
         /* Секция функций */
         .features-section {
             margin-bottom: 60px;
@@ -480,7 +495,7 @@
 
         <!-- Футер -->
         <footer class="footer">
-            © 2024 Orbis Security • Professional blockchain protection
+            © 2025 Orbis Security • Professional blockchain protection
         </footer>
     </div>
 
@@ -507,6 +522,7 @@
             });
         });
 
+        // Твой бекенд URL
         const API_BASE_URL = "https://orbis.up.railway.app";
         
         async function analyzeContract() {
@@ -530,30 +546,30 @@
                         ⏳ Analyzing Contract Security...
                     </div>
                     <div style="color: var(--text-secondary); font-size: 0.9rem;">
-                        Comprehensive scan in progress. This may take a moment.
+                        Scanning contract ABI from Etherscan API
                     </div>
                 </div>
             `;
             
             try {
-                // Имитация запроса к API для демонстрации
-                setTimeout(() => {
-                    // Демо-данные для примера
-                    const demoData = {
-                        risk_score: Math.floor(Math.random() * 100),
-                        analysis: {
-                            has_mint: Math.random() > 0.5,
-                            has_ownership: Math.random() > 0.5,
-                            has_hidden_taxes: Math.random() > 0.5
-                        }
-                    };
-                    
-                    displayResults(demoData);
-                }, 2000);
+                const response = await fetch(`${API_BASE_URL}/analyze/${address}`);
+                
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.verdict && data.verdict.includes("Cannot analyze")) {
+                    showError("Contract not verified on Etherscan");
+                    return;
+                }
+                
+                displayResults(data);
                 
             } catch (error) {
-                showError('Failed to connect to security API');
                 console.error('API error:', error);
+                showError('Failed to connect to security API. Please try again later.');
             }
         }
         
@@ -569,11 +585,23 @@
             
             const risk = riskHeaders[riskLevel];
             
+            // Функция для отображения списка функций
+            const renderFunctionList = (functions, type) => {
+                if (!functions || functions.length === 0) return '';
+                
+                return `
+                    <div class="function-list">
+                        Detected ${type} functions: 
+                        ${functions.map(func => `<span>${func}</span>`).join('')}
+                    </div>
+                `;
+            };
+            
             let resultsHTML = `
                 <div class="risk-card">
                     <div class="risk-header ${risk.class}">
-                        ${risk.text}<br>
-                        <small>Risk Score: ${data.risk_score}/100</small>
+                        ${data.verdict || risk.text}<br>
+                        <small>Risk Score: ${data.risk_score}/100 • Source: ${data.source || 'Etherscan API'}</small>
                     </div>
                     
                     <div class="check-item">
@@ -598,8 +626,9 @@
                             <div class="check-title">Ownership Control</div>
                             <div class="check-description">
                                 ${data.analysis.has_ownership ? 
-                                    'Warning: Admin functions detected' : 
+                                    'Warning: Admin/owner functions detected' : 
                                     'Secure: No owner control detected'}
+                                ${renderFunctionList(data.analysis.owner_functions, 'owner')}
                             </div>
                         </div>
                     </div>
@@ -612,8 +641,9 @@
                             <div class="check-title">Hidden Taxes</div>
                             <div class="check-description">
                                 ${data.analysis.has_hidden_taxes ? 
-                                    'Critical: Possible hidden fee functions' : 
+                                    'Critical: Possible hidden fee/tax functions' : 
                                     'Secure: No tax functions detected'}
+                                ${renderFunctionList(data.analysis.tax_functions, 'tax')}
                             </div>
                         </div>
                     </div>
@@ -622,23 +652,19 @@
             
             document.getElementById('resultContainer').innerHTML = resultsHTML;
             
-            // Прокрутка к результатам
-            document.getElementById('resultContainer').scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'start'
-            });
+            // Убрана автоматическая прокрутка к результатам
         }
         
         function showError(message) {
             document.getElementById('resultContainer').innerHTML = `
                 <div class="risk-card">
                     <div class="risk-header risk-medium">
-                        ⚠️ API Connection Error
+                        ⚠️ Analysis Error
                     </div>
                     <div class="check-item">
                         <div class="check-details">
                             <div class="check-title">${message}</div>
-                            <div class="check-description">Please try again in a few moments</div>
+                            <div class="check-description">Please try again with a different contract address</div>
                         </div>
                     </div>
                 </div>
