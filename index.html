@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orbis Scanner - The Fastest Rug Check</title>
+    <title>Orbis Scanner - Advanced Contract Security Check</title>
     <style>
         * {
             margin: 0;
@@ -20,7 +20,6 @@
             overflow-x: hidden;
         }
 
-        /* Звёздный паттерн */
         body::before {
             content: '';
             position: fixed;
@@ -45,39 +44,52 @@
         }
 
         .container {
-            max-width: 600px;
+            max-width: 800px;
             margin: 0 auto;
             padding: 40px 20px;
+        }
+
+        .header {
             text-align: center;
+            margin-bottom: 40px;
         }
 
         .logo {
-            font-size: 3rem;
+            font-size: 3.5rem;
             font-weight: bold;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             background: linear-gradient(45deg, #39FF14, #00ff00);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 20px rgba(57, 255, 20, 0.3);
+            text-shadow: 0 0 30px rgba(57, 255, 20, 0.4);
         }
 
         .tagline {
-            font-size: 1.2rem;
-            margin-bottom: 40px;
+            font-size: 1.3rem;
             opacity: 0.9;
-            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.7;
+            margin-bottom: 40px;
         }
 
         .input-group {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 20px;
+            border: 2px solid #39FF14;
             margin-bottom: 30px;
         }
 
         .contract-input {
             width: 100%;
-            padding: 16px;
+            padding: 18px;
             background: rgba(255, 255, 255, 0.1);
             border: 2px solid #39FF14;
-            border-radius: 12px;
+            border-radius: 15px;
             color: #fff;
             font-size: 16px;
             margin-bottom: 20px;
@@ -87,17 +99,17 @@
         .contract-input:focus {
             outline: none;
             border-color: #00ff00;
-            box-shadow: 0 0 20px rgba(57, 255, 20, 0.3);
+            box-shadow: 0 0 25px rgba(57, 255, 20, 0.4);
             background: rgba(255, 255, 255, 0.15);
         }
 
         .scan-btn {
             width: 100%;
-            padding: 18px;
+            padding: 20px;
             background: linear-gradient(135deg, #39FF14 0%, #000 50%, #39FF14 100%);
             background-size: 200% 200%;
             border: none;
-            border-radius: 12px;
+            border-radius: 15px;
             color: white;
             font-size: 18px;
             font-weight: bold;
@@ -109,55 +121,93 @@
 
         .scan-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 0 30px rgba(57, 255, 20, 0.4);
+            box-shadow: 0 0 35px rgba(57, 255, 20, 0.5);
             background-position: 100% 100%;
         }
 
-        .scan-btn:active {
-            transform: translateY(0);
-        }
-
-        .result {
-            margin-top: 30px;
-            padding: 20px;
-            border-radius: 12px;
+        .result-container {
             display: none;
-            animation: fadeIn 0.3s ease;
+            animation: fadeIn 0.5s ease;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .success {
-            background: rgba(57, 255, 20, 0.1);
-            border: 2px solid #39FF14;
-            color: #39FF14;
+        .risk-header {
+            text-align: center;
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            font-size: 1.5rem;
+            font-weight: bold;
         }
 
-        .warning {
-            background: rgba(255, 179, 0, 0.1);
-            border: 2px solid #FFB300;
-            color: #FFB300;
+        .critical { background: linear-gradient(135deg, #ff4757, #ff3838); }
+        .medium { background: linear-gradient(135deg, #ff9f43, #ff9f1a); }
+        .low { background: linear-gradient(135deg, #39FF14, #00ff00); }
+        .unknown { background: linear-gradient(135deg, #747d8c, #57606f); }
+
+        .check-list {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid #39FF14;
         }
 
-        .error {
-            background: rgba(255, 75, 75, 0.1);
-            border: 2px solid #FF4B4B;
-            color: #FF4B4B;
+        .check-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+        }
+
+        .check-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .check-icon {
+            font-size: 24px;
+            margin-right: 15px;
+            width: 30px;
+            text-align: center;
+        }
+
+        .check-details {
+            flex: 1;
+        }
+
+        .check-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+
+        .check-description {
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        .danger { color: #ff4757; border-left: 4px solid #ff4757; }
+        .warning { color: #ff9f43; border-left: 4px solid #ff9f43; }
+        .safe { color: #39FF14; border-left: 4px solid #39FF14; }
+
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            opacity: 0.6;
+            font-size: 0.9rem;
         }
 
         .loading {
-            background: rgba(100, 100, 100, 0.1);
-            border: 2px solid #666;
-            color: #666;
-        }
-
-        .footer {
-            margin-top: 50px;
-            opacity: 0.7;
-            font-size: 0.9rem;
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            color: #39FF14;
         }
 
         @media (max-width: 768px) {
@@ -166,45 +216,47 @@
             }
             
             .logo {
-                font-size: 2.5rem;
+                font-size: 2.8rem;
             }
             
-            .tagline {
-                font-size: 1.1rem;
+            .input-group {
+                padding: 20px;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="logo">ORBIS</div>
-        <div class="tagline">
-            The Fastest Rug Check Button<br>
-            Know if a memecoin is safe or a scam in under 2 seconds
+        <div class="header">
+            <div class="logo">ORBIS</div>
+            <div class="tagline">Advanced Contract Security Scanner</div>
+            <div class="subtitle">Detect rug pulls, hidden taxes, and malicious code in seconds</div>
         </div>
 
         <div class="input-group">
             <input type="text" class="contract-input" 
                    placeholder="Enter Ethereum contract address (0x...)" 
                    id="contractAddress">
-            <button class="scan-btn" onclick="checkMint()">
-                Scan for Mint Function
+            <button class="scan-btn" onclick="analyzeContract()">
+                Analyze Contract Security
             </button>
         </div>
 
-        <div class="result" id="result"></div>
+        <div class="result-container" id="resultContainer">
+            <!-- Results will be inserted here -->
+        </div>
 
         <div class="footer">
-            Powered by EtherScan API • Built with Solidity
+            Powered by EtherScan API • Real-time blockchain analysis
         </div>
     </div>
 
     <script>
         const API_BASE_URL = "https://orbis.up.railway.app";
         
-        async function checkMint() {
+        async function analyzeContract() {
             const address = document.getElementById('contractAddress').value.trim();
-            const resultDiv = document.getElementById('result');
+            const resultContainer = document.getElementById('resultContainer');
             
             if (!address) {
                 showResult('Please enter a contract address', 'error');
@@ -216,40 +268,124 @@
                 return;
             }
             
-            showResult('Scanning contract...', 'loading');
+            // Show loading
+            resultContainer.style.display = 'block';
+            resultContainer.innerHTML = `
+                <div class="loading">
+                    ⏳ Analyzing contract security...<br>
+                    <small>Checking for mint functions, ownership risks, and hidden taxes</small>
+                </div>
+            `;
             
             try {
-                const response = await fetch(`${API_BASE_URL}/check-mint/${address}`);
+                const response = await fetch(`${API_BASE_URL}/analyze/${address}`);
                 const data = await response.json();
                 
-                if (data.has_mint) {
-                    showResult(`⚠️ CRITICAL: Mint function found!<br><br>
-                               Contract: ${address}<br>
-                               This contract can create unlimited tokens at any time.`, 'warning');
-                } else if (data.error) {
-                    showResult(`ℹ️ ${data.error}`, 'error');
-                } else {
-                    showResult(`✅ No mint function detected<br><br>
-                               Contract: ${address}<br>
-                               Basic security check passed.`, 'success');
+                if (data.error) {
+                    showResult(`❌ Error: ${data.error}`, 'error');
+                    return;
                 }
+                
+                displayResults(data);
+                
             } catch (error) {
-                showResult('🚨 Error connecting to scanner API', 'error');
+                resultContainer.innerHTML = `
+                    <div class="risk-header unknown">
+                        🚨 Connection Error
+                    </div>
+                    <div class="check-list">
+                        <div class="check-item danger">
+                            <div class="check-icon">❌</div>
+                            <div class="check-details">
+                                <div class="check-title">Network Issue</div>
+                                <div class="check-description">Failed to connect to scanner API. Please try again.</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
                 console.error('API error:', error);
             }
         }
         
-        function showResult(message, type) {
-            const resultDiv = document.getElementById('result');
-            resultDiv.style.display = 'block';
-            resultDiv.className = `result ${type}`;
-            resultDiv.innerHTML = message;
+        function displayResults(data) {
+            const riskLevel = data.risk_score >= 70 ? 'critical' : 
+                             data.risk_score >= 30 ? 'medium' : 'low';
+            
+            const riskHeaders = {
+                critical: { class: 'critical', text: '🚨 CRITICAL RISK DETECTED' },
+                medium: { class: 'medium', text: '⚠️ MEDIUM RISK DETECTED' },
+                low: { class: 'low', text: '✅ LOW RISK - LOOKS SAFE' }
+            };
+            
+            const risk = riskHeaders[riskLevel];
+            
+            let resultsHTML = `
+                <div class="risk-header ${risk.class}">
+                    ${risk.text}<br>
+                    <small>Risk Score: ${data.risk_score}/100 • ${data.verdict}</small>
+                </div>
+                
+                <div class="check-list">
+                    <div class="check-item ${data.analysis.has_mint ? 'danger' : 'safe'}">
+                        <div class="check-icon">${data.analysis.has_mint ? '❌' : '✅'}</div>
+                        <div class="check-details">
+                            <div class="check-title">Mint Function</div>
+                            <div class="check-description">
+                                ${data.analysis.has_mint ? 
+                                    'DANGER: Contract can create unlimited tokens' : 
+                                    'SAFE: No mint function detected'}
+                                ${data.analysis.has_mint ? '<br><small>Found functions: ' + data.analysis.owner_functions.join(', ') + '</small>' : ''}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="check-item ${data.analysis.has_ownership ? 'warning' : 'safe'}">
+                        <div class="check-icon">${data.analysis.has_ownership ? '⚠️' : '✅'}</div>
+                        <div class="check-details">
+                            <div class="check-title">Ownership Control</div>
+                            <div class="check-description">
+                                ${data.analysis.has_ownership ? 
+                                    'WARNING: Contract has owner functions' : 
+                                    'SAFE: No owner control detected'}
+                                ${data.analysis.has_ownership ? '<br><small>Found functions: ' + data.analysis.owner_functions.join(', ') + '</small>' : ''}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="check-item ${data.analysis.has_hidden_taxes ? 'danger' : 'safe'}">
+                        <div class="check-icon">${data.analysis.has_hidden_taxes ? '❌' : '✅'}</div>
+                        <div class="check-details">
+                            <div class="check-title">Hidden Taxes</div>
+                            <div class="check-description">
+                                ${data.analysis.has_hidden_taxes ? 
+                                    'DANGER: Possible hidden tax functions' : 
+                                    'SAFE: No tax functions detected'}
+                                ${data.analysis.has_hidden_taxes ? '<br><small>Found functions: ' + data.analysis.tax_functions.join(', ') + '</small>' : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="check-list">
+                    <div class="check-item">
+                        <div class="check-icon">📋</div>
+                        <div class="check-details">
+                            <div class="check-title">Contract Address</div>
+                            <div class="check-description" style="word-break: break-all;">
+                                ${data.address}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('resultContainer').innerHTML = resultsHTML;
         }
-
+        
         // Enter key support
         document.getElementById('contractAddress').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
-                checkMint();
+                analyzeContract();
             }
         });
     </script>
