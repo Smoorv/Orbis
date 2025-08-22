@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Orbis Scanner Demo</title>
+    <meta charset="UTF-8">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 600px; 
+            margin: 40px auto; 
+            padding: 20px; 
+        }
+        input, button { 
+            padding: 12px; 
+            margin: 8px 0; 
+            width: 100%; 
+            box-sizing: border-box; 
+        }
+        button { 
+            background: #2563EB; 
+            color: white; 
+            border: none; 
+            cursor: pointer; 
+        }
+        button:hover { background: #1D4ED8; }
+        #result { 
+            margin-top: 20px; 
+            padding: 15px; 
+            border-radius: 5px; 
+            display: none; 
+        }
+        .success { background: #D1FAE5; color: #065F46; }
+        .error { background: #FEE2E2; color: #B91C1C; }
+        .loading { color: #666; }
+    </style>
+</head>
+<body>
+    <h2>Orbis Scanner Demo</h2>
+    <p>Check if a smart contract has a mint function</p>
+    
+    <input type="text" id="contractAddress" 
+           placeholder="Enter Ethereum contract address (0x...)" 
+           style="font-family: monospace;">
+    
+    <button onclick="checkMint()">Check for Mint Function</button>
+    
+    <div id="result"></div>
+    
+    <script>
+        const API_BASE_URL = "https://your-app-name.railway.app";  // ЗАМЕНИ НА СВОЙ URL
+        
+        async function checkMint() {
+            const address = document.getElementById('contractAddress').value.trim();
+            const resultDiv = document.getElementById('result');
+            
+            if (!address) {
+                showResult('Please enter a contract address', 'error');
+                return;
+            }
+            
+            if (!address.startsWith('0x') || address.length !== 42) {
+                showResult('Invalid Ethereum address format', 'error');
+                return;
+            }
+            
+            showResult('Checking contract...', 'loading');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/check-mint/${address}`);
+                const data = await response.json();
+                
+                if (data.has_mint) {
+                    showResult(`⚠️ WARNING: Mint function found in contract ${address}`, 'error');
+                } else if (data.error) {
+                    showResult(`ℹ️ ${data.error}`, 'error');
+                } else {
+                    showResult(`✅ No mint function found in contract ${address}`, 'success');
+                }
+            } catch (error) {
+                showResult('Error connecting to scanner API', 'error');
+                console.error('API error:', error);
+            }
+        }
+        
+        function showResult(message, type) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = type;
+            resultDiv.innerHTML = message;
+        }
+    </script>
+</body>
+</html>
