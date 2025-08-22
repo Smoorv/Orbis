@@ -37,38 +37,34 @@
             position: relative;
         }
 
-        /* Premium фон с частицами */
-        #particles-js {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            z-index: -3;
-        }
-
-        .gradient-overlay {
+        /* Анимированный фон с мелкими кругами-звездами */
+        .background {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: 
-                radial-gradient(circle at 20% 20%, rgba(57, 255, 20, 0.08) 0%, transparent 40%),
-                radial-gradient(circle at 80% 80%, rgba(0, 204, 102, 0.06) 0%, transparent 40%);
-            z-index: -2;
-        }
-
-        .grid-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                linear-gradient(rgba(57, 255, 20, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(57, 255, 20, 0.03) 1px, transparent 1px);
-            background-size: 40px 40px;
             z-index: -1;
-            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .star {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(57, 255, 20, 0.5);
+            animation: twinkle 6s infinite ease-in-out;
+            opacity: 0;
+        }
+
+        @keyframes twinkle {
+            0%, 100% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         .container {
@@ -429,10 +425,8 @@
     </style>
 </head>
 <body>
-    <!-- Продвинутый фон -->
-    <div id="particles-js"></div>
-    <div class="gradient-overlay"></div>
-    <div class="grid-overlay"></div>
+    <!-- Анимированный фон с мелкими кругами-звездами -->
+    <div class="background" id="animatedBackground"></div>
 
     <div class="container">
         <!-- Герой секция -->
@@ -499,29 +493,35 @@
         </footer>
     </div>
 
-    <!-- Скрипт для частиц -->
-    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script>
-        // Инициализация частиц для premium фона
-        document.addEventListener('DOMContentLoaded', function() {
-            particlesJS('particles-js', {
-                particles: {
-                    number: { value: 80, density: { enable: true, value_area: 800 } },
-                    color: { value: "#39FF14" },
-                    shape: { type: "circle" },
-                    opacity: { value: 0.3, random: true },
-                    size: { value: 3, random: true },
-                    line_linked: { enable: true, distance: 150, color: "#39FF14", opacity: 0.1, width: 1 },
-                    move: { enable: true, speed: 1, direction: "none", random: true }
-                },
-                interactivity: {
-                    detect_on: "canvas",
-                    events: { onhover: { enable: true, mode: "grab" }, onclick: { enable: true, mode: "push" } },
-                    modes: { grab: { distance: 140, line_linked: { opacity: 0.2 } }, push: { particles_nb: 4 } }
-                }
-            });
-        });
-
+        // Создание анимированных звезд как на лендинге
+        function createAnimatedBackground() {
+            const background = document.getElementById('animatedBackground');
+            const starsCount = 80; // Больше звезд для эффекта как на лендинге
+            
+            for (let i = 0; i < starsCount; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                
+                // Очень маленький размер (1-3px) как на лендинге
+                const size = Math.random() * 2 + 1;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                
+                // Случайная позиция
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                
+                // Случайная задержка анимации
+                star.style.animationDelay = `${Math.random() * 6}s`;
+                
+                // Случайная длительность анимации
+                star.style.animationDuration = `${Math.random() * 3 + 4}s`;
+                
+                background.appendChild(star);
+            }
+        }
+        
         // Твой бекенд URL
         const API_BASE_URL = "https://orbis.up.railway.app";
         
@@ -651,8 +651,6 @@
             `;
             
             document.getElementById('resultContainer').innerHTML = resultsHTML;
-            
-            // Убрана автоматическая прокрутка к результатам
         }
         
         function showError(message) {
@@ -676,6 +674,11 @@
             if (e.key === 'Enter') {
                 analyzeContract();
             }
+        });
+        
+        // Инициализация фона при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            createAnimatedBackground();
         });
     </script>
 </body>
