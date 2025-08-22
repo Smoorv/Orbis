@@ -43,9 +43,7 @@ def is_cache_valid(timestamp):
 async def check_mint(contract_address: str):
     """
     Checks if a contract has a mint function by fetching its ABI from Etherscan.
-    Uses caching to reduce API calls.
     """
-    # Нормализуем адрес
     contract_address = contract_address.lower().strip()
     
     # Загружаем кеш
@@ -74,11 +72,18 @@ async def check_mint(contract_address: str):
             }
         else:
             contract_abi = json.loads(data['result'])
-            has_mint = any(
-                item.get('type') == 'function' and 
-                item.get('name', '').lower() == 'mint' 
-                for item in contract_abi
-            )
+            
+            # УЛУЧШЕННАЯ ПРОВЕРКА: ищем именно функцию MINT с параметрами
+            has_mint = False
+            for item in contract_abi:
+                if (item.get('type') == 'function' and 
+                    item.get('name') == 'mint' and 
+                    'inputs' in item and 
+                    len(item['inputs']) > 0):
+                    # Проверяем, что это действительно функция создания токенов
+                    # а не просто функция с похожим названием
+                    has_mint = True
+                    break
             
             result = {
                 "address": contract_address,
@@ -97,7 +102,7 @@ async def check_mint(contract_address: str):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
-
+        
 @app.get("/")
 async def root():
     return {"message": "Orbis Scanner API is running", "version": "1.0"}
