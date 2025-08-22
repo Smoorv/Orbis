@@ -38,13 +38,14 @@ def is_cache_valid(timestamp):
     return datetime.now() - cached_time < CACHE_DURATION
 
 def analyze_contract_abi(contract_abi):
-    """Точный анализ ABI контракта на наличие опасных функций"""
+    """Сверхточный анализ ABI контракта на наличие опасных функций"""
     results = {
         "has_dangerous_mint": False,
         "has_dangerous_ownership": False,
         "has_setter_taxes": False,
         "dangerous_functions": [],
-        "risk_details": []
+        "risk_details": [],
+        "detected_functions": []
     }
 
     for item in contract_abi:
@@ -53,51 +54,63 @@ def analyze_contract_abi(contract_abi):
             state_mutability = item.get('stateMutability', '')
             inputs = item.get('inputs', [])
             
+            # Записываем все обнаруженные функции для отладки
+            results["detected_functions"].append({
+                "name": name,
+                "state_mutability": state_mutability,
+                "inputs_count": len(inputs)
+            })
+            
             # Проверяем только функции, которые меняют состояние (не view/pure)
             if state_mutability not in ['view', 'pure']:
                 
-                # Опасные mint функции (которые могут создавать токены)
-                mint_patterns = ['mint', 'createtoken', 'generatetoken']
-                if any(pattern in name for pattern in mint_patterns) and len(inputs) > 0:
+                # ТОЛЬКО действительно опасные mint функции
+                dangerous_mint_patterns = [
+                    'mint', 'createtoken', 'generatetoken', 'print'
+                ]
+                # Проверяем точное совпадение или начало названия
+                is_dangerous_mint = any(
+                    name == pattern or 
+                    name.startswith(pattern) and not name.endswith(('role', 'ed', 'er'))
+                    for pattern in dangerous_mint_patterns
+                )
+                
+                if is_dangerous_mint and len(inputs) >= 1:
                     results["has_dangerous_mint"] = True
                     results["dangerous_functions"].append(name)
                     results["risk_details"].append(f"Dangerous mint function: {name}")
                 
-                # Опасные ownership функции (которые меняют владельца)
-                dangerous_ownership = [
+                # ТОЛЬКО конкретные опасные ownership функции
+                dangerous_ownership_functions = {
                     'transferownership', 'renounceownership', 'setowner', 
                     'updateowner', 'changeowner', 'addowner', 'removeowner',
-                    'setadmin', 'changeadmin', 'transferadmin'
-                ]
-                if name in dangerous_ownership:
+                    'setadmin', 'changeadmin', 'transferadmin', 'claimownership'
+                }
+                
+                if name in dangerous_ownership_functions:
                     results["has_dangerous_ownership"] = True
                     results["dangerous_functions"].append(name)
                     results["risk_details"].append(f"Dangerous ownership function: {name}")
                 
-                # Функции установки налогов/комиссий (setter функции)
-                tax_setters = [
+                # ТОЛЬКО конкретные setter функции для налогов
+                tax_setter_functions = {
                     'setfee', 'settax', 'updatefee', 'updatetax', 'changefee', 
                     'changetax', 'setcommission', 'updatecommission', 'changecommission',
-                    'setrat', 'updaterat', 'changerat'  # ratio
-                ]
-                if name in tax_setters:
+                    'setratio', 'updateratio', 'changeratio'
+                }
+                
+                if name in tax_setter_functions:
                     results["has_setter_taxes"] = True
                     results["dangerous_functions"].append(name)
                     results["risk_details"].append(f"Tax setter function: {name}")
-            
-            # Дополнительно проверяем view функции на наличие признаков ownership
-            else:
-                ownership_view_patterns = ['owner', 'admin', 'controller']
-                if any(pattern in name for pattern in ownership_view_patterns):
-                    results["risk_details"].append(f"Ownership view function detected: {name}")
 
     return results
 
 def calculate_risk_score(analysis):
-    """Точная оценка рисков на основе обнаруженных опасных функций"""
+    """Точная оценка рисков ТОЛЬКО при наличии реальных опасных функций"""
     risk_score = 0
     
-    # Веса рисков
+    # Веса рисков - ТОЛЬКО если найдены реальные опасные функции
     if analysis["has_dangerous_mint"]:
         risk_score += 35
     if analysis["has_dangerous_ownership"]:
@@ -105,33 +118,52 @@ def calculate_risk_score(analysis):
     if analysis["has_setter_taxes"]:
         risk_score += 25
     
-    # Дополнительные баллы за множественные опасные функции
-    dangerous_count = len(analysis["dangerous_functions"])
-    if dangerous_count > 1:
-        risk_score += min((dangerous_count - 1) * 10, 20)
+    # Если нет опасных функций, но есть другие - минимальный риск
+    if risk_score == 0 and analysis["detected_functions"]:
+        risk_score = 5  # Минимальный риск для верифицированных контрактов
     
-    return min(risk_score, 100)  # Ограничиваем максимум 100
+    return min(risk_score, 100)
 
 def generate_verdict(risk_score, analysis):
-    """Генерация точного вердикта на основе оценки риска"""
-    if risk_score >= 80:
-        verdict = "🚨 CRITICAL RISK: Multiple dangerous functions detected"
-    elif risk_score >= 60:
-        verdict = "⚠️ HIGH RISK: Significant control risks present"
-    elif risk_score >= 40:
-        verdict = "🟡 MEDIUM RISK: Some concerning features found"
-    elif risk_score >= 20:
-        verdict = "🔵 MODERATE RISK: Minor issues detected"
+    """Генерация точного вердикта"""
+    if risk_score >= 70:
+        return "🚨 CRITICAL RISK: Multiple dangerous functions detected"
+    elif risk_score >= 50:
+        return "⚠️ HIGH RISK: Significant control risks present"
+    elif risk_score >= 30:
+        return "🟡 MEDIUM RISK: Some concerning features found"
+    elif risk_score >= 10:
+        return "🔵 LOW RISK: Minor potential issues"
+    elif risk_score == 5:
+        return "✅ SECURE: No dangerous functions detected"
     else:
-        verdict = "✅ LOW RISK: No critical dangerous functions found"
+        return "✅ VERIFIED: Contract is safe"
+
+def generate_security_status(analysis):
+    """Генерация статусов безопасности для каждой категории"""
+    statuses = []
     
-    return verdict
+    if not analysis["has_dangerous_mint"]:
+        statuses.append("✅ Mint Function Detection: Secure - No dangerous mint function detected")
+    else:
+        statuses.append("❌ Mint Function Detection: Dangerous mint function found")
+    
+    if not analysis["has_dangerous_ownership"]:
+        statuses.append("✅ Ownership Control: Secure - No dangerous owner control detected")
+    else:
+        statuses.append("❌ Ownership Control: Dangerous owner control functions found")
+    
+    if not analysis["has_setter_taxes"]:
+        statuses.append("✅ Hidden Taxes: Secure - No tax setter functions detected")
+    else:
+        statuses.append("❌ Hidden Taxes: Tax setter functions found")
+    
+    return statuses
 
 @app.get("/analyze/{contract_address}")
 async def analyze_contract(contract_address: str):
     contract_address = contract_address.lower().strip()
     
-    # Проверяем валидность адреса Ethereum
     if not re.match(r'^0x[a-f0-9]{40}$', contract_address):
         raise HTTPException(status_code=400, detail="Invalid Ethereum address format")
     
@@ -148,6 +180,7 @@ async def analyze_contract(contract_address: str):
         data = response.json()
         
         if data['status'] != '1' or not data['result'] or data['result'] == 'Contract source code not verified':
+            # Для неверифицированных контрактов - высокий риск
             result = {
                 "address": contract_address,
                 "analysis": {
@@ -155,10 +188,15 @@ async def analyze_contract(contract_address: str):
                     "has_dangerous_ownership": False,
                     "has_setter_taxes": False,
                     "dangerous_functions": [],
-                    "risk_details": ["Contract not verified or ABI not available"]
+                    "risk_details": ["Contract not verified - high risk"],
+                    "detected_functions": []
                 },
-                "risk_score": 10,
-                "verdict": "❓ Cannot analyze: Contract not verified",
+                "risk_score": 85,
+                "verdict": "🚨 HIGH RISK: Contract not verified",
+                "security_status": [
+                    "❌ Contract Verification: Not verified - High risk",
+                    "⚠️ Analysis limited: Cannot analyze unverified contract"
+                ],
                 "source": "Etherscan API",
                 "timestamp": datetime.now().isoformat()
             }
@@ -167,17 +205,18 @@ async def analyze_contract(contract_address: str):
             analysis = analyze_contract_abi(contract_abi)
             risk_score = calculate_risk_score(analysis)
             verdict = generate_verdict(risk_score, analysis)
+            security_status = generate_security_status(analysis)
             
             result = {
                 "address": contract_address,
                 "analysis": analysis,
                 "risk_score": risk_score,
                 "verdict": verdict,
+                "security_status": security_status,
                 "source": "Etherscan API (Live)",
                 "timestamp": datetime.now().isoformat()
             }
         
-        # Сохраняем в кэш
         cache[contract_address] = {
             'timestamp': datetime.now().isoformat(),
             'response': result
@@ -186,29 +225,12 @@ async def analyze_contract(contract_address: str):
         
         return result
         
-    except requests.Timeout:
-        raise HTTPException(status_code=504, detail="Etherscan API timeout")
-    except requests.RequestException as e:
-        raise HTTPException(status_code=502, detail=f"Etherscan API error: {str(e)}")
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=500, detail="Invalid JSON response from Etherscan")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 @app.get("/")
 async def root():
-    return {
-        "message": "Orbis Scanner API is running", 
-        "version": "2.0",
-        "endpoints": {
-            "analyze": "/analyze/{contract_address}",
-            "health": "/health"
-        }
-    }
-
-@app.get("/health")
-async def health_check():
-    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
+    return {"message": "Orbis Scanner API is running", "version": "2.1"}
 
 if __name__ == "__main__":
     import uvicorn
