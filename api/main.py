@@ -4,10 +4,11 @@ import requests
 import json
 import os
 from datetime import datetime, timedelta
+import re
 
 app = FastAPI()
 
-# Разрешаем запросы отовсюду (для теста)
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,12 +16,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-ETHERSCAN_API_KEY = os.getenv("ETHERSCAN_API_KEY")  # Берем из переменных окружения
+ETHERSCAN_API_KEY = os.getenv("ETHERSCAN_API_KEY")
 CACHE_FILE = "cache.json"
-CACHE_DURATION = timedelta(hours=1)  # Кеш на 1 час
+CACHE_DURATION = timedelta(hours=1)
 
 def load_cache():
-    """Загружает кеш из файла"""
     if os.path.exists(CACHE_FILE):
         try:
             with open(CACHE_FILE, 'r') as f:
@@ -30,33 +30,59 @@ def load_cache():
     return {}
 
 def save_cache(cache):
-    """Сохраняет кеш в файл"""
     with open(CACHE_FILE, 'w') as f:
         json.dump(cache, f)
 
 def is_cache_valid(timestamp):
-    """Проверяет актуальность кеша"""
     cached_time = datetime.fromisoformat(timestamp)
     return datetime.now() - cached_time < CACHE_DURATION
 
-@app.get("/check-mint/{contract_address}")
-async def check_mint(contract_address: str):
-    """
-    Checks if a contract has a mint function by fetching its ABI from Etherscan.
-    """
+def analyze_contract_abi(contract_abi):
+    """Анализирует ABI контракта на наличие опасных функций"""
+    results = {
+        "has_mint": False,
+        "has_ownership": False,
+        "has_hidden_taxes": False,
+        "owner_functions": [],
+        "tax_functions": []
+    }
+    
+    # Проверяем каждый элемент в ABI
+    for item in contract_abi:
+        if item.get('type') == 'function':
+            name = item.get('name', '').lower()
+            
+            # 1. Проверка Mint function
+            if name == 'mint' and len(item.get('inputs', [])) > 0:
+                results["has_mint"] = True
+            
+            # 2. Проверка Ownership functions
+            owner_keywords = ['owner', 'ownership', 'admin', 'controller']
+            if any(keyword in name for keyword in owner_keywords):
+                results["has_ownership"] = True
+                results["owner_functions"].append(name)
+            
+            # 3. Проверка Hidden Taxes
+            tax_keywords = ['fee', 'tax', 'commission', 'ratio']
+            if any(keyword in name for keyword in tax_keywords):
+                results["has_hidden_taxes"] = True
+                results["tax_functions"].append(name)
+    
+    return results
+
+@app.get("/analyze/{contract_address}")
+async def analyze_contract(contract_address: str):
+    """Полный анализ контракта"""
     contract_address = contract_address.lower().strip()
     
-    # Загружаем кеш
+    # Проверка кеша
     cache = load_cache()
-    
-    # Проверяем кеш
     if contract_address in cache:
         cached_data = cache[contract_address]
         if is_cache_valid(cached_data['timestamp']):
-            print(f"Returning cached result for {contract_address}")
             return cached_data['response']
     
-    # Если нет в кеше - идем в Etherscan
+    # Получение ABI
     abi_url = f"https://api.etherscan.io/api?module=contract&action=getabi&address={contract_address}&apikey={ETHERSCAN_API_KEY}"
     
     try:
@@ -66,32 +92,44 @@ async def check_mint(contract_address: str):
         if data['status'] != '1' or not data['result']:
             result = {
                 "address": contract_address,
-                "has_mint": False,
-                "error": "Contract ABI not found or not verified on Etherscan",
-                "source": "Etherscan API (Live)"
+                "analysis": {
+                    "has_mint": False,
+                    "has_ownership": False,
+                    "has_hidden_taxes": False,
+                    "owner_functions": [],
+                    "tax_functions": []
+                },
+                "risk_score": 0,
+                "verdict": "❓ Cannot analyze: Contract not verified",
+                "source": "Etherscan API"
             }
         else:
             contract_abi = json.loads(data['result'])
+            analysis = analyze_contract_abi(contract_abi)
             
-            # УЛУЧШЕННАЯ ПРОВЕРКА: ищем именно функцию MINT с параметрами
-            has_mint = False
-            for item in contract_abi:
-                if (item.get('type') == 'function' and 
-                    item.get('name') == 'mint' and 
-                    'inputs' in item and 
-                    len(item['inputs']) > 0):
-                    # Проверяем, что это действительно функция создания токенов
-                    # а не просто функция с похожим названием
-                    has_mint = True
-                    break
+            # Расчет risk score
+            risk_score = 0
+            if analysis["has_mint"]: risk_score += 30
+            if analysis["has_ownership"]: risk_score += 40
+            if analysis["has_hidden_taxes"]: risk_score += 30
+            
+            # Вердикт
+            if risk_score >= 70:
+                verdict = "🚨 CRITICAL RISK: High probability of scam"
+            elif risk_score >= 30:
+                verdict = "⚠️ MEDIUM RISK: Multiple red flags detected"
+            else:
+                verdict = "✅ LOW RISK: No critical issues found"
             
             result = {
                 "address": contract_address,
-                "has_mint": has_mint,
+                "analysis": analysis,
+                "risk_score": risk_score,
+                "verdict": verdict,
                 "source": "Etherscan API (Live)"
             }
         
-        # Сохраняем в кеш
+        # Сохранение в кеш
         cache[contract_address] = {
             'timestamp': datetime.now().isoformat(),
             'response': result
@@ -102,10 +140,10 @@ async def check_mint(contract_address: str):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
-        
+
 @app.get("/")
 async def root():
-    return {"message": "Orbis Scanner API is running", "version": "1.0"}
+    return {"message": "Orbis Scanner API is running", "version": "2.0"}
 
 if __name__ == "__main__":
     import uvicorn
