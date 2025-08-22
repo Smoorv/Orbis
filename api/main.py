@@ -53,15 +53,18 @@ def analyze_contract_abi(contract_abi):
             name = item.get('name', '').lower()
             
 
+            # Mint проверка - только функции которые могут mint'ить
             if name == 'mint' and len(item.get('inputs', [])) > 0:
                 results["has_mint"] = True
 
-            owner_keywords = ['owner', 'ownership', 'admin', 'controller']
+            # Ownership проверка - только опасные функции
+            owner_keywords = ['transferownership', 'renounceownership', 'setowner', 'updateowner']
             if any(keyword in name for keyword in owner_keywords):
                 results["has_ownership"] = True
                 results["owner_functions"].append(name)
 
-            tax_keywords = ['fee', 'tax', 'commission', 'ratio']
+            # Tax проверка - только setter функции
+            tax_keywords = ['setfee', 'settax', 'updatefee', 'updatetax']
             if any(keyword in name for keyword in tax_keywords):
                 results["has_hidden_taxes"] = True
                 results["tax_functions"].append(name)
@@ -107,8 +110,10 @@ async def analyze_contract(contract_address: str):
             if analysis["has_ownership"]: risk_score += 40
             if analysis["has_hidden_taxes"]: risk_score += 30
             
-      
-            if risk_score >= 70:
+            # Если ничего не найдено - низкий риск
+            if risk_score == 0:
+                verdict = "✅ LOW RISK: No critical issues found"
+            elif risk_score >= 70:
                 verdict = "🚨 CRITICAL RISK: High probability of scam"
             elif risk_score >= 30:
                 verdict = "⚠️ MEDIUM RISK: Multiple red flags detected"
