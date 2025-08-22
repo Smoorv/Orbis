@@ -1,53 +1,206 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Orbis Scanner Demo</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orbis Scanner - The Fastest Rug Check</title>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            max-width: 600px; 
-            margin: 40px auto; 
-            padding: 20px; 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        input, button { 
-            padding: 12px; 
-            margin: 8px 0; 
-            width: 100%; 
-            box-sizing: border-box; 
+
+        body {
+            background-color: #000;
+            color: #fff;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
         }
-        button { 
-            background: #2563EB; 
-            color: white; 
-            border: none; 
-            cursor: pointer; 
+
+        /* Звёздный паттерн */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, #39FF14 0.5px, transparent 1px),
+                radial-gradient(circle at 80% 70%, #39FF14 0.5px, transparent 1px),
+                radial-gradient(circle at 40% 80%, #39FF14 0.5px, transparent 1px),
+                radial-gradient(circle at 60% 20%, #39FF14 0.5px, transparent 1px);
+            background-size: 300px 300px;
+            opacity: 0.3;
+            z-index: -1;
+            animation: stars 20s infinite linear;
         }
-        button:hover { background: #1D4ED8; }
-        #result { 
-            margin-top: 20px; 
-            padding: 15px; 
-            border-radius: 5px; 
-            display: none; 
+
+        @keyframes stars {
+            from { background-position: 0 0; }
+            to { background-position: 300px 300px; }
         }
-        .success { background: #D1FAE5; color: #065F46; }
-        .error { background: #FEE2E2; color: #B91C1C; }
-        .loading { color: #666; }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #39FF14, #00ff00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(57, 255, 20, 0.3);
+        }
+
+        .tagline {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .input-group {
+            margin-bottom: 30px;
+        }
+
+        .contract-input {
+            width: 100%;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #39FF14;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 16px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .contract-input:focus {
+            outline: none;
+            border-color: #00ff00;
+            box-shadow: 0 0 20px rgba(57, 255, 20, 0.3);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .scan-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #39FF14 0%, #000 50%, #39FF14 100%);
+            background-size: 200% 200%;
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .scan-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(57, 255, 20, 0.4);
+            background-position: 100% 100%;
+        }
+
+        .scan-btn:active {
+            transform: translateY(0);
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 12px;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .success {
+            background: rgba(57, 255, 20, 0.1);
+            border: 2px solid #39FF14;
+            color: #39FF14;
+        }
+
+        .warning {
+            background: rgba(255, 179, 0, 0.1);
+            border: 2px solid #FFB300;
+            color: #FFB300;
+        }
+
+        .error {
+            background: rgba(255, 75, 75, 0.1);
+            border: 2px solid #FF4B4B;
+            color: #FF4B4B;
+        }
+
+        .loading {
+            background: rgba(100, 100, 100, 0.1);
+            border: 2px solid #666;
+            color: #666;
+        }
+
+        .footer {
+            margin-top: 50px;
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+            }
+            
+            .logo {
+                font-size: 2.5rem;
+            }
+            
+            .tagline {
+                font-size: 1.1rem;
+            }
+        }
     </style>
 </head>
 <body>
-    <h2>Orbis Scanner Demo</h2>
-    <p>Check if a smart contract has a mint function</p>
-    
-    <input type="text" id="contractAddress" 
-           placeholder="Enter Ethereum contract address (0x...)" 
-           style="font-family: monospace;">
-    
-    <button onclick="checkMint()">Check for Mint Function</button>
-    
-    <div id="result"></div>
-    
+    <div class="container">
+        <div class="logo">ORBIS</div>
+        <div class="tagline">
+            The Fastest Rug Check Button<br>
+            Know if a memecoin is safe or a scam in under 2 seconds
+        </div>
+
+        <div class="input-group">
+            <input type="text" class="contract-input" 
+                   placeholder="Enter Ethereum contract address (0x...)" 
+                   id="contractAddress">
+            <button class="scan-btn" onclick="checkMint()">
+                Scan for Mint Function
+            </button>
+        </div>
+
+        <div class="result" id="result"></div>
+
+        <div class="footer">
+            Powered by EtherScan API • Built with Solidity
+        </div>
+    </div>
+
     <script>
-        const API_BASE_URL = "https://orbis.up.railway.app";  // ЗАМЕНИ НА СВОЙ URL
+        const API_BASE_URL = "https://orbis.up.railway.app";
         
         async function checkMint() {
             const address = document.getElementById('contractAddress').value.trim();
@@ -63,21 +216,25 @@
                 return;
             }
             
-            showResult('Checking contract...', 'loading');
+            showResult('Scanning contract...', 'loading');
             
             try {
                 const response = await fetch(`${API_BASE_URL}/check-mint/${address}`);
                 const data = await response.json();
                 
                 if (data.has_mint) {
-                    showResult(`⚠️ WARNING: Mint function found in contract ${address}`, 'error');
+                    showResult(`⚠️ CRITICAL: Mint function found!<br><br>
+                               Contract: ${address}<br>
+                               This contract can create unlimited tokens at any time.`, 'warning');
                 } else if (data.error) {
                     showResult(`ℹ️ ${data.error}`, 'error');
                 } else {
-                    showResult(`✅ No mint function found in contract ${address}`, 'success');
+                    showResult(`✅ No mint function detected<br><br>
+                               Contract: ${address}<br>
+                               Basic security check passed.`, 'success');
                 }
             } catch (error) {
-                showResult('Error connecting to scanner API', 'error');
+                showResult('🚨 Error connecting to scanner API', 'error');
                 console.error('API error:', error);
             }
         }
@@ -85,9 +242,16 @@
         function showResult(message, type) {
             const resultDiv = document.getElementById('result');
             resultDiv.style.display = 'block';
-            resultDiv.className = type;
+            resultDiv.className = `result ${type}`;
             resultDiv.innerHTML = message;
         }
+
+        // Enter key support
+        document.getElementById('contractAddress').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkMint();
+            }
+        });
     </script>
 </body>
 </html>
