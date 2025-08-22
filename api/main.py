@@ -47,22 +47,20 @@ def analyze_contract_abi(contract_abi):
         "tax_functions": []
     }
     
-    # Проверяем каждый элемент в ABI
+
     for item in contract_abi:
         if item.get('type') == 'function':
             name = item.get('name', '').lower()
             
-            # 1. Проверка Mint function
+
             if name == 'mint' and len(item.get('inputs', [])) > 0:
                 results["has_mint"] = True
-            
-            # 2. Проверка Ownership functions
+
             owner_keywords = ['owner', 'ownership', 'admin', 'controller']
             if any(keyword in name for keyword in owner_keywords):
                 results["has_ownership"] = True
                 results["owner_functions"].append(name)
-            
-            # 3. Проверка Hidden Taxes
+
             tax_keywords = ['fee', 'tax', 'commission', 'ratio']
             if any(keyword in name for keyword in tax_keywords):
                 results["has_hidden_taxes"] = True
@@ -72,17 +70,14 @@ def analyze_contract_abi(contract_abi):
 
 @app.get("/analyze/{contract_address}")
 async def analyze_contract(contract_address: str):
-    """Полный анализ контракта"""
     contract_address = contract_address.lower().strip()
     
-    # Проверка кеша
     cache = load_cache()
     if contract_address in cache:
         cached_data = cache[contract_address]
         if is_cache_valid(cached_data['timestamp']):
             return cached_data['response']
     
-    # Получение ABI
     abi_url = f"https://api.etherscan.io/api?module=contract&action=getabi&address={contract_address}&apikey={ETHERSCAN_API_KEY}"
     
     try:
@@ -107,13 +102,12 @@ async def analyze_contract(contract_address: str):
             contract_abi = json.loads(data['result'])
             analysis = analyze_contract_abi(contract_abi)
             
-            # Расчет risk score
             risk_score = 0
             if analysis["has_mint"]: risk_score += 30
             if analysis["has_ownership"]: risk_score += 40
             if analysis["has_hidden_taxes"]: risk_score += 30
             
-            # Вердикт
+      
             if risk_score >= 70:
                 verdict = "🚨 CRITICAL RISK: High probability of scam"
             elif risk_score >= 30:
@@ -129,7 +123,7 @@ async def analyze_contract(contract_address: str):
                 "source": "Etherscan API (Live)"
             }
         
-        # Сохранение в кеш
+        
         cache[contract_address] = {
             'timestamp': datetime.now().isoformat(),
             'response': result
