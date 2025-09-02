@@ -3,23 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orbis Scanner - Professional Smart Contract Security</title>
+    <title>ORBIS - The Fastest Rug Check</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #39FF14;
-            --primary-dark: #00CC66;
-            --primary-gradient: linear-gradient(135deg, #39FF14 0%, #00CC66 100%);
-            --primary-glow: 0 0 80px rgba(57, 255, 20, 0.4);
-            --surface: #0A0A0A;
-            --surface-elevated: rgba(20, 20, 20, 0.8);
-            --border: rgba(57, 255, 20, 0.15);
-            --text-primary: #FFFFFF;
-            --text-secondary: #888888;
-            --critical: #FF453A;
-            --warning: #FF9F0A;
-            --success: #30D158;
+            --primary: #0f62fe;
+            --primary-dark: #0043ce;
+            --primary-light: #daebff;
+            --primary-gradient: linear-gradient(135deg, #0f62fe 0%, #4589ff 100%);
+            --primary-glow: 0 0 40px rgba(15, 98, 254, 0.3);
+            --surface: #ffffff;
+            --surface-elevated: #f4f4f4;
+            --surface-dark: #161616;
+            --border: #e0e0e0;
+            --border-dark: #393939;
+            --text-primary: #161616;
+            --text-secondary: #525252;
+            --text-tertiary: #a8a8a8;
+            --critical: #fa4d56;
+            --warning: #ff832b;
+            --success: #42be65;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.15);
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
         }
 
         * {
@@ -30,15 +42,16 @@
         }
 
         body {
-            background: #000000;
-            color: var(--text-primary);
+            background: #0a0a16;
+            color: #ffffff;
             min-height: 100vh;
             overflow-x: hidden;
+            line-height: 1.6;
             position: relative;
         }
 
-        /* Анимированный фон с мелкими кругами-звездами */
-        .background {
+        /* Футуристический анимированный фон */
+        .cyber-background {
             position: fixed;
             top: 0;
             left: 0;
@@ -46,114 +59,347 @@
             height: 100%;
             z-index: -1;
             overflow: hidden;
+            background: linear-gradient(125deg, #060612 0%, #0a0a24 30%, #0c0c35 100%);
         }
 
-        .star {
+        .grid-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 200%;
+            height: 200%;
+            background: 
+                linear-gradient(to right, rgba(15, 98, 254, 0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(15, 98, 254, 0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
+            transform: perspective(500px) rotateX(60deg) translateY(-400px) translateX(-200px);
+            animation: gridMove 15s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: perspective(500px) rotateX(60deg) translateY(-400px) translateX(0); }
+            100% { transform: perspective(500px) rotateX(60deg) translateY(-400px) translateX(-40px); }
+        }
+
+        .cyber-circle {
             position: absolute;
             border-radius: 50%;
-            background: rgba(57, 255, 20, 0.5);
-            animation: twinkle 6s infinite ease-in-out;
+            border: 1px solid rgba(15, 98, 254, 0.3);
+            box-shadow: 0 0 60px rgba(15, 98, 254, 0.2);
             opacity: 0;
         }
 
-        @keyframes twinkle {
-            0%, 100% {
+        .cyber-node {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--primary);
+            border-radius: 50%;
+            box-shadow: 0 0 10px 2px rgba(15, 98, 254, 0.8);
+        }
+
+        .cyber-line {
+            position: absolute;
+            background: linear-gradient(to right, rgba(15, 98, 254, 0.5), transparent);
+            height: 1px;
+            transform-origin: left center;
+        }
+
+        .pulse {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: rgba(15, 98, 254, 0.1);
+            box-shadow: 0 0 0 0 rgba(15, 98, 254, 0.7);
+            animation: pulseEffect 4s infinite;
+            opacity: 0;
+        }
+
+        @keyframes pulseEffect {
+            0% {
+                transform: scale(0.1);
                 opacity: 0;
-                transform: scale(0.8);
             }
             50% {
-                opacity: 1;
-                transform: scale(1);
+                opacity: 0.3;
             }
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+
+        .floating-shape {
+            position: absolute;
+            border: 1px solid rgba(15, 98, 254, 0.2);
+            opacity: 0.1;
         }
 
         .container {
-            max-width: 800px;
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 60px 20px;
+            padding: 40px 24px;
             position: relative;
-            z-index: 1;
+            z-index: 2;
         }
 
-        /* Герой секция */
-        .hero {
-            text-align: center;
-            margin-bottom: 60px;
+        /* Back Button */
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        /* Header Styles */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 0;
+            margin-bottom: 20px;
         }
 
         .logo {
-            font-size: 4rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.8rem;
             font-weight: 800;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            background: var(--primary-gradient);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        /* Landing Page Styles */
+        #landing {
+            transition: opacity 0.3s ease;
+        }
+
+        .hero {
+            text-align: center;
+            margin: 60px 0;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-title {
+            font-size: 4rem;
+            font-weight: 700;
             margin-bottom: 20px;
-            background: linear-gradient(135deg, #39FF14 0%, #00FF88 50%, #39FF14 100%);
+            background: linear-gradient(135deg, #4589ff 0%, #0f62fe 30%, #78a9ff 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 80px rgba(57, 255, 20, 0.6);
-            animation: glow 3s infinite alternate;
+            line-height: 1.1;
+            text-shadow: 0 5px 25px rgba(15, 98, 254, 0.4);
+            letter-spacing: -0.5px;
         }
 
-        @keyframes glow {
-            from { text-shadow: 0 0 40px rgba(57, 255, 20, 0.4); }
-            to { text-shadow: 0 0 80px rgba(57, 255, 20, 0.8); }
-        }
-
-        .tagline {
+        .hero-subtitle {
             font-size: 1.4rem;
-            color: #cccccc;
-            margin-bottom: 12px;
+            color: rgba(255, 255, 255, 0.8);
             font-weight: 400;
-            letter-spacing: 0.5px;
+            margin-bottom: 48px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.5;
         }
 
-        .subtitle {
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.95rem;
+        }
+
+        .cta-button {
+            padding: 20px 36px;
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: var(--radius-md);
+            color: white;
             font-size: 1.1rem;
-            color: #888888;
-            font-weight: 300;
-            max-width: 500px;
-            margin: 0 auto;
-            line-height: 1.6;
-        }
-
-        /* Карта сканера */
-        .scanner-card {
-            background: var(--surface-elevated);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 50px 40px;
-            margin-bottom: 40px;
-            box-shadow: 
-                0 25px 50px rgba(0, 0, 0, 0.5),
-                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 10px 30px rgba(15, 98, 254, 0.4);
+            margin-bottom: 60px;
         }
 
-        .scanner-card::before {
+        .cta-button::before {
             content: '';
             position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: var(--primary-gradient);
-            opacity: 0.03;
-            transform: rotate(-5deg);
-            z-index: -1;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .cta-button:hover::before {
+            left: 100%;
+        }
+
+        .cta-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(15, 98, 254, 0.5);
+        }
+
+        .cta-button:active {
+            transform: translateY(0);
+        }
+
+        /* Features Section */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 80px 0;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-xl);
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(15, 98, 254, 0.25);
+            border-color: rgba(15, 98, 254, 0.3);
+        }
+
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            background: rgba(15, 98, 254, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: var(--primary);
+            font-size: 28px;
+        }
+
+        .feature-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: white;
+        }
+
+        .feature-description {
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        /* Scanner Page Styles */
+        #scanner {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .scanner-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 0;
+            margin-bottom: 40px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Scanner Card */
+        .scanner-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-xl);
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .scanner-card:hover {
+            box-shadow: 0 12px 40px rgba(15, 98, 254, 0.25);
+            border-color: rgba(15, 98, 254, 0.3);
         }
 
         .input-group {
             position: relative;
-            margin-bottom: 30px;
+            margin-bottom: 24px;
         }
 
         .contract-input {
             width: 100%;
-            padding: 22px 25px;
-            background: rgba(10, 10, 10, 0.7);
-            border: 1.5px solid var(--border);
-            border-radius: 16px;
-            color: var(--text-primary);
+            padding: 18px 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-md);
+            color: white;
             font-size: 16px;
             font-family: 'JetBrains Mono', monospace;
             transition: all 0.3s ease;
@@ -162,86 +408,112 @@
 
         .contract-input:focus {
             border-color: var(--primary);
-            box-shadow: var(--primary-glow);
-            background: rgba(15, 15, 15, 0.9);
+            box-shadow: 0 0 0 2px rgba(15, 98, 254, 0.3);
         }
 
         .contract-input::placeholder {
-            color: #444;
-            font-family: 'Inter', sans-serif;
+            color: rgba(255, 255, 255, 0.4);
         }
 
         .scan-btn {
             width: 100%;
-            padding: 22px;
+            padding: 18px;
             background: var(--primary-gradient);
             border: none;
-            border-radius: 16px;
-            color: #000;
-            font-size: 17px;
+            border-radius: var(--radius-md);
+            color: white;
+            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
             position: relative;
             overflow: hidden;
         }
 
+        .scan-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .scan-btn:hover::before {
+            left: 100%;
+        }
+
         .scan-btn:hover {
+            background: var(--primary-dark);
             transform: translateY(-2px);
-            box-shadow: 0 15px 40px rgba(57, 255, 20, 0.3);
+            box-shadow: 0 10px 25px rgba(15, 98, 254, 0.4);
         }
 
         .scan-btn:active {
             transform: translateY(0);
         }
 
-        /* Результаты */
+        /* Results Section */
         .result-container {
             display: none;
             margin-bottom: 40px;
         }
 
         .risk-card {
-            background: var(--surface-elevated);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--border);
-            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-xl);
             overflow: hidden;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
         }
 
         .risk-header {
-            padding: 30px 40px;
+            padding: 24px 32px;
             text-align: center;
             font-weight: 600;
-            font-size: 1.3rem;
-            background: linear-gradient(135deg, rgba(57, 255, 20, 0.1), transparent);
-            border-bottom: 1px solid var(--border);
+            font-size: 1.25rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .risk-score {
+            font-size: 2.5rem;
+            font-weight: 700;
         }
 
         .risk-critical { 
-            background: linear-gradient(135deg, rgba(255, 69, 58, 0.15), transparent);
+            background: rgba(250, 77, 86, 0.1);
             color: var(--critical);
         }
         .risk-medium { 
-            background: linear-gradient(135deg, rgba(255, 159, 10, 0.15), transparent);
+            background: rgba(255, 131, 43, 0.1);
             color: var(--warning);
         }
         .risk-low { 
-            background: linear-gradient(135deg, rgba(48, 209, 88, 0.15), transparent);
+            background: rgba(66, 190, 101, 0.1);
             color: var(--success);
         }
 
         .check-item {
-            padding: 25px 40px;
-            border-bottom: 1px solid var(--border);
+            padding: 24px 32px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             transition: all 0.3s ease;
         }
 
         .check-item:hover {
-            background: rgba(57, 255, 20, 0.03);
+            background: rgba(15, 98, 254, 0.05);
         }
 
         .check-item:last-child {
@@ -249,11 +521,12 @@
         }
 
         .check-icon {
-            font-size: 24px;
-            margin-right: 22px;
-            width: 28px;
+            font-size: 20px;
+            margin-right: 16px;
+            width: 24px;
             text-align: center;
             flex-shrink: 0;
+            margin-top: 2px;
         }
 
         .check-details {
@@ -264,10 +537,14 @@
             font-weight: 600;
             margin-bottom: 8px;
             font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
         }
 
         .check-description {
-            color: var(--text-secondary);
+            color: rgba(255, 255, 255, 0.7);
             font-size: 14px;
             line-height: 1.5;
         }
@@ -279,251 +556,447 @@
         .function-list {
             margin-top: 8px;
             font-size: 13px;
-            color: #aaa;
+            color: rgba(255, 255, 255, 0.6);
         }
 
         .function-list span {
             display: inline-block;
-            background: rgba(255,255,255,0.1);
-            padding: 3px 8px;
-            border-radius: 6px;
-            margin: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px 8px;
+            border-radius: var(--radius-sm);
+            margin: 4px 4px 4px 0;
             font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        /* Секция функций */
-        .features-section {
-            margin-bottom: 60px;
+        .danger-banner {
+            padding: 20px 24px;
+            border-radius: var(--radius-md);
+            margin: 24px 32px;
+            border-left: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.05);
         }
 
-        .section-header {
-            text-align: center;
-            margin-bottom: 40px;
+        .danger-critical {
+            border-left-color: var(--critical);
+            color: var(--critical);
         }
 
-        .section-title {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 16px;
-            background: linear-gradient(135deg, #FFFFFF 0%, #AAAAAA 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .danger-safe {
+            border-left-color: var(--success);
+            color: var(--success);
         }
 
-        .section-subtitle {
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-            max-width: 600px;
-            margin: 0 auto;
-            line-height: 1.6;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 25px;
-        }
-
-        .feature-card {
-            background: var(--surface-elevated);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 30px;
+        .toggle-report {
+            width: calc(100% - 64px);
+            margin: 16px 32px;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-md);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
             transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-            text-align: center;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--primary);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-        }
-
-        .feature-icon {
-            width: 60px;
-            height: 60px;
-            background: rgba(57, 255, 20, 0.1);
-            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 20px;
-            font-size: 24px;
+            gap: 8px;
         }
 
-        .feature-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: var(--text-primary);
+        .toggle-report:hover {
+            background: rgba(15, 98, 254, 0.1);
+            border-color: rgba(15, 98, 254, 0.3);
+            color: var(--primary);
         }
 
-        .feature-description {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-            line-height: 1.6;
+        .toggle-arrow {
+            transition: transform 0.3s ease;
         }
 
-        /* Футер */
+        .toggle-arrow.expanded {
+            transform: rotate(180deg);
+        }
+
+        /* Footer */
         .footer {
-            text-align: center;
-            color: #666666;
-            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 32px 0;
             margin-top: 60px;
-            padding: 30px;
-            border-top: 1px solid var(--border);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
         }
 
-        /* Анимации */
+        .footer-links {
+            display: flex;
+            gap: 24px;
+        }
+
+        .footer-link {
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .footer-link:hover {
+            color: var(--primary);
+        }
+
+        /* Animations */
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(30px); }
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Адаптивность */
-        @media (max-width: 768px) {
-            .container {
-                padding: 40px 16px;
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 968px) {
+            .hero-title {
+                font-size: 3.2rem;
             }
             
-            .logo {
-                font-size: 3rem;
+            .hero-subtitle {
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 24px 16px;
+            }
+            
+            .header {
+                justify-content: center;
+            }
+            
+            .hero-title {
+                font-size: 2.6rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 30px;
+            }
+            
+            .features {
+                grid-template-columns: 1fr;
             }
             
             .scanner-card {
-                padding: 30px 25px;
-            }
-            
-            .features-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
+                padding: 24px;
             }
             
             .check-item {
                 padding: 20px;
             }
+            
+            .footer {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+            
+            .footer-links {
+                justify-content: center;
+            }
         }
 
         @media (max-width: 480px) {
-            .container {
-                padding: 30px 12px;
+            .hero-title {
+                font-size: 2.2rem;
             }
             
-            .scanner-card {
-                padding: 25px 20px;
+            .cta-button {
+                padding: 18px 30px;
+                font-size: 1rem;
             }
             
             .logo {
-                font-size: 2.5rem;
+                font-size: 1.5rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+            
+            .scanner-card {
+                padding: 20px;
             }
             
             .check-item {
-                padding: 18px 15px;
+                padding: 16px;
+            }
+            
+            .risk-header {
+                padding: 20px;
+            }
+            
+            .danger-banner {
+                margin: 16px 20px;
+            }
+            
+            .toggle-report {
+                width: calc(100% - 40px);
+                margin: 16px 20px;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Анимированный фон с мелкими кругами-звездами -->
-    <div class="background" id="animatedBackground"></div>
+    <div class="cyber-background" id="cyberBackground"></div>
+    <button class="back-button" id="backButton" onclick="showLanding()">
+        <i class="fas fa-arrow-left"></i> Back to Home
+    </button>
 
-    <div class="container">
-        <!-- Герой секция -->
-        <section class="hero">
-            <div class="logo">ORBIS</div>
-            <div class="tagline">Professional Contract Security</div>
-            <div class="subtitle">Advanced detection for traders and developers</div>
-        </section>
+    <!-- Landing Page -->
+    <div id="landing">
+        <div class="container">
+            <header class="header">
+                <div class="logo">
+                    <div class="logo-icon">O</div>
+                    <span>ORBIS</span>
+                </div>
+            </header>
 
-        <!-- Сканер -->
-        <div class="scanner-card">
-            <div class="input-group">
-                <input type="text" class="contract-input" 
-                       placeholder="Enter Ethereum contract address (0x...)" 
-                       id="contractAddress">
-            </div>
-            <button class="scan-btn" onclick="analyzeContract()">
-                🔍 Analyze Contract Security
-            </button>
+            <section class="hero">
+                <h1 class="hero-title">The Fastest<br>Rug Check</h1>
+                <p class="hero-subtitle">Next-generation smart contract security scanner designed to protect crypto investors from scams and malicious tokens</p>
+                
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-value">5K+</div>
+                        <div class="stat-label">Contracts Scanned</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">99.7%</div>
+                        <div class="stat-label">Accuracy</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">&lt;3s</div>
+                        <div class="stat-label">Scan Time</div>
+                    </div>
+                </div>
+                
+                <button class="cta-button" onclick="showScanner()">
+                    <i class="fas fa-bolt"></i> SCAN CONTRACT NOW
+                </button>
+            </section>
+
+            <section class="features">
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h3 class="feature-title">Instant Analysis</h3>
+                    <p class="feature-description">Get comprehensive security reports in seconds. Our advanced algorithms detect malicious patterns faster than any other tool.</p>
+                </div>
+                
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="feature-title">Advanced Detection</h3>
+                    <p class="feature-description">Identifies hidden mint functions, malicious ownership patterns, and sophisticated scam mechanisms that other tools miss.</p>
+                </div>
+                
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3 class="feature-title">AI-Powered</h3>
+                    <p class="feature-description">Our machine learning models continuously learn from new scam patterns to provide the most up-to-date protection.</p>
+                </div>
+            </section>
+
+            <footer class="footer">
+                <div>© 2025 ORBIS. All rights reserved.</div>
+                <div class="footer-links">
+                    <a href="#" class="footer-link">Privacy</a>
+                    <a href="#" class="footer-link">Terms</a>
+                    <a href="#" class="footer-link">Contact</a>
+                </div>
+            </footer>
         </div>
+    </div>
 
-        <!-- Результаты -->
-        <div class="result-container" id="resultContainer">
-            <!-- Results will be inserted here -->
+    <!-- Scanner Page -->
+    <div id="scanner">
+        <div class="container">
+            <header class="scanner-header">
+                <div class="logo">
+                    <div class="logo-icon">O</div>
+                    <span>ORBIS</span>
+                </div>
+            </header>
+
+            <section class="hero">
+                <h1 class="hero-title">Smart Contract Security Intelligence</h1>
+                <p class="hero-subtitle">Enterprise-grade detection of malicious functions in meme coins and cryptocurrency tokens</p>
+            </section>
+
+            <div class="scanner-card">
+                <div class="input-group">
+                    <input type="text" class="contract-input" 
+                           placeholder="Enter Ethereum contract address (0x...)" 
+                           id="contractAddress">
+                </div>
+                <button class="scan-btn" onclick="analyzeContract()">
+                    <i class="fas fa-search"></i> Analyze Contract Security
+                </button>
+            </div>
+
+            <div class="result-container" id="resultContainer"></div>
+
+            <footer class="footer">
+                <div>© 2025 ORBIS. All rights reserved.</div>
+                <div class="footer-links">
+                    <a href="#" class="footer-link">Privacy</a>
+                    <a href="#" class="footer-link">Terms</a>
+                    <a href="#" class="footer-link">Contact</a>
+                </div>
+            </footer>
         </div>
-
-        <!-- Секция функций -->
-        <section class="features-section">
-            <div class="section-header">
-                <h2 class="section-title">Professional-Grade Detection</h2>
-                <p class="section-subtitle">Advanced security features for serious traders and developers</p>
-            </div>
-            
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">🔍</div>
-                    <h3 class="feature-title">Mint Function Detection</h3>
-                    <p class="feature-description">Identify unlimited token minting capabilities that could devalue your position</p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">👑</div>
-                    <h3 class="feature-title">Ownership Analysis</h3>
-                    <p class="feature-description">Detect admin functions and ownership privileges that could compromise token security</p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">💸</div>
-                    <h3 class="feature-title">Hidden Tax Detection</h3>
-                    <p class="feature-description">Uncover hidden transfer fees and tax mechanisms that aren't disclosed to users</p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">⚡</div>
-                    <h3 class="feature-title">Real-time Analysis</h3>
-                    <p class="feature-description">Instant scanning with detailed security reports and risk assessment</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Футер -->
-        <footer class="footer">
-            © 2025 Orbis Security • Professional blockchain protection
-        </footer>
     </div>
 
     <script>
-        // Создание анимированных звезд как на лендинге
-        function createAnimatedBackground() {
-            const background = document.getElementById('animatedBackground');
-            const starsCount = 80; // Больше звезд для эффекта как на лендинге
-            
-            for (let i = 0; i < starsCount; i++) {
-                const star = document.createElement('div');
-                star.classList.add('star');
-                
-                // Очень маленький размер (1-3px) как на лендинге
-                const size = Math.random() * 2 + 1;
-                star.style.width = `${size}px`;
-                star.style.height = `${size}px`;
-                
-                // Случайная позиция
-                star.style.left = `${Math.random() * 100}%`;
-                star.style.top = `${Math.random() * 100}%`;
-                
-                // Случайная задержка анимации
-                star.style.animationDelay = `${Math.random() * 6}s`;
-                
-                // Случайная длительность анимации
-                star.style.animationDuration = `${Math.random() * 3 + 4}s`;
-                
-                background.appendChild(star);
-            }
+        const API_BASE_URL = "https://orbis.up.railway.app";
+        let currentReportExpanded = false;
+        
+        // Navigation functions
+        function showScanner() {
+            document.getElementById('landing').style.display = 'none';
+            document.getElementById('scanner').style.display = 'block';
+            document.getElementById('backButton').style.display = 'flex';
+            setTimeout(() => {
+                document.getElementById('scanner').style.opacity = '1';
+            }, 10);
+            window.scrollTo(0, 0);
         }
         
-        // Твой бекенд URL
-        const API_BASE_URL = "https://orbis.up.railway.app";
+        function showLanding() {
+            document.getElementById('scanner').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('scanner').style.display = 'none';
+                document.getElementById('landing').style.display = 'block';
+                document.getElementById('backButton').style.display = 'none';
+            }, 300);
+            window.scrollTo(0, 0);
+        }
+        
+        // Создание футуристического фона
+        function createCyberBackground() {
+            const background = document.getElementById('cyberBackground');
+            
+            // Создаем сетку
+            const gridLines = document.createElement('div');
+            gridLines.classList.add('grid-lines');
+            background.appendChild(gridLines);
+            
+            // Создаем круги
+            for (let i = 0; i < 15; i++) {
+                const circle = document.createElement('div');
+                circle.classList.add('cyber-circle');
+                
+                const size = Math.random() * 200 + 50;
+                circle.style.width = `${size}px`;
+                circle.style.height = `${size}px`;
+                
+                circle.style.left = `${Math.random() * 100}%`;
+                circle.style.top = `${Math.random() * 100}%`;
+                
+                circle.style.animation = `
+                    circleFadeInOut ${Math.random() * 10 + 10}s infinite ease-in-out ${Math.random() * 5}s
+                `;
+                
+                background.appendChild(circle);
+            }
+            
+            // Создаем пульсирующие круги
+            for (let i = 0; i < 5; i++) {
+                const pulse = document.createElement('div');
+                pulse.classList.add('pulse');
+                
+                pulse.style.left = `${Math.random() * 100}%`;
+                pulse.style.top = `${Math.random() * 100}%`;
+                
+                pulse.style.animationDelay = `${Math.random() * 4}s`;
+                
+                background.appendChild(pulse);
+            }
+            
+            // Создаем узлы и соединения
+            const nodes = [];
+            for (let i = 0; i < 20; i++) {
+                const node = document.createElement('div');
+                node.classList.add('cyber-node');
+                
+                node.style.left = `${Math.random() * 100}%`;
+                node.style.top = `${Math.random() * 100}%`;
+                
+                nodes.push({
+                    element: node,
+                    x: parseFloat(node.style.left),
+                    y: parseFloat(node.style.top)
+                });
+                
+                background.appendChild(node);
+            }
+            
+            // Создаем плавающие формы
+            for (let i = 0; i < 8; i++) {
+                const shape = document.createElement('div');
+                shape.classList.add('floating-shape');
+                
+                const size = Math.random() * 150 + 50;
+                shape.style.width = `${size}px`;
+                shape.style.height = `${size}px`;
+                
+                if (Math.random() > 0.5) {
+                    shape.style.borderRadius = '50%';
+                } else {
+                    shape.style.transform = `rotate(${Math.random() * 45}deg)`;
+                }
+                
+                shape.style.left = `${Math.random() * 100}%`;
+                shape.style.top = `${Math.random() * 100}%`;
+                
+                shape.style.animation = `
+                    float ${Math.random() * 20 + 10}s infinite ease-in-out
+                `;
+                
+                background.appendChild(shape);
+            }
+            
+            // Добавляем CSS анимации
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes circleFadeInOut {
+                    0%, 100% { opacity: 0; }
+                    50% { opacity: 0.3; }
+                }
+                
+                @keyframes float {
+                    0%, 100% { transform: translateY(0) rotate(0deg); }
+                    50% { transform: translateY(-20px) rotate(5deg); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
         
         async function analyzeContract() {
             const address = document.getElementById('contractAddress').value.trim();
@@ -542,10 +1015,10 @@
             resultContainer.style.display = 'block';
             resultContainer.innerHTML = `
                 <div class="scanner-card" style="text-align: center;">
-                    <div style="color: var(--primary); font-size: 1.2rem; margin-bottom: 20px;">
-                        ⏳ Analyzing Contract Security...
+                    <div style="color: var(--primary); font-size: 1.1rem; margin-bottom: 16px;">
+                        <i class="fas fa-spinner fa-spin"></i> Analyzing Contract Security...
                     </div>
-                    <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                    <div style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem;">
                         Scanning contract ABI from Etherscan API
                     </div>
                 </div>
@@ -578,56 +1051,88 @@
                              data.risk_score >= 30 ? 'medium' : 'low';
             
             const riskHeaders = {
-                critical: { class: 'risk-critical', text: '🚨 CRITICAL RISK DETECTED' },
-                medium: { class: 'risk-medium', text: '⚠️ MEDIUM RISK DETECTED' },
-                low: { class: 'risk-low', text: '✅ SECURITY VERIFIED' }
+                critical: { 
+                    class: 'risk-critical', 
+                    text: 'Critical Risk Detected',
+                    icon: 'fas fa-exclamation-triangle'
+                },
+                medium: { 
+                    class: 'risk-medium', 
+                    text: 'Medium Risk Detected',
+                    icon: 'fas fa-exclamation-circle'
+                },
+                low: { 
+                    class: 'risk-low', 
+                    text: 'Security Verified',
+                    icon: 'fas fa-check-circle'
+                }
             };
             
             const risk = riskHeaders[riskLevel];
             
-            // Функция для отображения списка функций
-            const renderFunctionList = (functions, type) => {
-                if (!functions || functions.length === 0) return '';
-                
-                return `
-                    <div class="function-list">
-                        Detected ${type} functions: 
-                        ${functions.map(func => `<span>${func}</span>`).join('')}
+            let dangerBanner = '';
+            if (data.most_dangerous) {
+                dangerBanner = `
+                    <div class="danger-banner danger-critical">
+                        <i class="fas fa-radiation"></i>
+                        <div>
+                            <strong>Critical Function Detected</strong>
+                            <div class="danger-function">${data.most_dangerous}</div>
+                        </div>
                     </div>
                 `;
-            };
-            
-            let resultsHTML = `
-                <div class="risk-card">
-                    <div class="risk-header ${risk.class}">
-                        ${data.verdict || risk.text}<br>
-                        <small>Risk Score: ${data.risk_score}/100 • Source: ${data.source || 'Etherscan API'}</small>
+            } else {
+                dangerBanner = `
+                    <div class="danger-banner danger-safe">
+                        <i class="fas fa-shield-alt"></i>
+                        <div>
+                            <strong>All Security Checks Passed</strong>
+                            <div class="danger-function">No dangerous functions detected</div>
+                        </div>
                     </div>
-                    
+                `;
+            }
+            
+            const toggleButton = `
+                <button class="toggle-report" onclick="toggleFullReport()">
+                    <span>${currentReportExpanded ? 'Hide' : 'Show'} Detailed Security Report</span>
+                    <span class="toggle-arrow ${currentReportExpanded ? 'expanded' : ''}"><i class="fas fa-chevron-down"></i></span>
+                </button>
+            `;
+            
+            const fullReport = `
+                <div id="fullReport" style="display: none;">
                     <div class="check-item">
                         <div class="check-icon ${data.analysis.has_mint ? 'check-danger' : 'check-safe'}">
-                            ${data.analysis.has_mint ? '❌' : '✅'}
+                            <i class="fas ${data.analysis.has_mint ? 'fa-times-circle' : 'fa-check-circle'}"></i>
                         </div>
                         <div class="check-details">
-                            <div class="check-title">Mint Function Detection</div>
+                            <div class="check-title">
+                                Mint Function Detection
+                                ${data.analysis.has_mint ? '<span class="check-danger"><i class="fas fa-exclamation-triangle"></i> Critical</span>' : '<span class="check-safe"><i class="fas fa-check"></i> Secure</span>'}
+                            </div>
                             <div class="check-description">
                                 ${data.analysis.has_mint ? 
-                                    'Critical: Contract can create unlimited tokens' : 
-                                    'Secure: No mint function detected'}
+                                    'Contract can create unlimited tokens, potentially diluting value' : 
+                                    'No mint function detected, token supply is fixed'}
+                                ${renderFunctionList(data.analysis.mint_functions, 'mint')}
                             </div>
                         </div>
                     </div>
                     
                     <div class="check-item">
                         <div class="check-icon ${data.analysis.has_ownership ? 'check-warning' : 'check-safe'}">
-                            ${data.analysis.has_ownership ? '⚠️' : '✅'}
+                            <i class="fas ${data.analysis.has_ownership ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i>
                         </div>
                         <div class="check-details">
-                            <div class="check-title">Ownership Control</div>
+                            <div class="check-title">
+                                Ownership Control
+                                ${data.analysis.has_ownership ? '<span class="check-warning"><i class="fas fa-exclamation-circle"></i> Warning</span>' : '<span class="check-safe"><i class="fas fa-check"></i> Secure</span>'}
+                            </div>
                             <div class="check-description">
                                 ${data.analysis.has_ownership ? 
-                                    'Warning: Admin/owner functions detected' : 
-                                    'Secure: No owner control detected'}
+                                    'Admin/owner functions detected, contract can be modified after deployment' : 
+                                    'No owner control detected, contract is immutable'}
                                 ${renderFunctionList(data.analysis.owner_functions, 'owner')}
                             </div>
                         </div>
@@ -635,29 +1140,114 @@
                     
                     <div class="check-item">
                         <div class="check-icon ${data.analysis.has_hidden_taxes ? 'check-danger' : 'check-safe'}">
-                            ${data.analysis.has_hidden_taxes ? '❌' : '✅'}
+                            <i class="fas ${data.analysis.has_hidden_taxes ? 'fa-times-circle' : 'fa-check-circle'}"></i>
                         </div>
                         <div class="check-details">
-                            <div class="check-title">Hidden Taxes</div>
+                            <div class="check-title">
+                                Hidden Taxes
+                                ${data.analysis.has_hidden_taxes ? '<span class="check-danger"><i class="fas fa-exclamation-triangle"></i> Critical</span>' : '<span class="check-safe"><i class="fas fa-check"></i> Secure</span>'}
+                            </div>
                             <div class="check-description">
                                 ${data.analysis.has_hidden_taxes ? 
-                                    'Critical: Possible hidden fee/tax functions' : 
-                                    'Secure: No tax functions detected'}
+                                    'Possible hidden fee/tax functions that can take value from transactions' : 
+                                    'No tax functions detected, all transaction values are preserved'}
                                 ${renderFunctionList(data.analysis.tax_functions, 'tax')}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="check-item">
+                        <div class="check-icon ${data.analysis.has_blacklist ? 'check-warning' : 'check-safe'}">
+                            <i class="fas ${data.analysis.has_blacklist ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i>
+                        </div>
+                        <div class="check-details">
+                            <div class="check-title">
+                                Blacklist Functions
+                                ${data.analysis.has_blacklist ? '<span class="check-warning"><i class="fas fa-exclamation-circle"></i> Warning</span>' : '<span class="check-safe"><i class="fas fa-check"></i> Secure</span>'}
+                            </div>
+                            <div class="check-description">
+                                ${data.analysis.has_blacklist ? 
+                                    'Can ban specific wallets from trading, potentially locking funds' : 
+                                    'No blacklist functions detected, all wallets can trade freely'}
+                                ${renderFunctionList(data.analysis.blacklist_functions, 'blacklist')}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="check-item">
+                        <div class="check-icon ${data.analysis.has_pausable ? 'check-warning' : 'check-safe'}">
+                            <i class="fas ${data.analysis.has_pausable ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i>
+                        </div>
+                        <div class="check-details">
+                            <div class="check-title">
+                                Trading Controls
+                                ${data.analysis.has_pausable ? '<span class="check-warning"><i class="fas fa-exclamation-circle"></i> Warning</span>' : '<span class="check-safe"><i class="fas fa-check"></i> Secure</span>'}
+                            </div>
+                            <div class="check-description">
+                                ${data.analysis.has_pausable ? 
+                                    'Can pause trading anytime, potentially locking all transactions' : 
+                                    'No trading pause functions detected, trading is always available'}
+                                ${renderFunctionList(data.analysis.pausable_functions, 'pausable')}
                             </div>
                         </div>
                     </div>
                 </div>
             `;
             
+            let resultsHTML = `
+                <div class="risk-card fade-in">
+                    <div class="risk-header ${risk.class}">
+                        <i class="${risk.icon}"></i>
+                        <div>${data.verdict || risk.text}</div>
+                        <div class="risk-score">${data.risk_score}/100</div>
+                        <small>Risk assessment based on ${data.source || 'Etherscan API'} analysis</small>
+                    </div>
+                    
+                    ${dangerBanner}
+                    ${toggleButton}
+                    ${fullReport}
+                </div>
+            `;
+            
             document.getElementById('resultContainer').innerHTML = resultsHTML;
+            currentReportExpanded = false;
+        }
+        
+        function toggleFullReport() {
+            const fullReport = document.getElementById('fullReport');
+            const toggleButton = document.querySelector('.toggle-report');
+            const toggleArrow = document.querySelector('.toggle-arrow');
+            
+            if (fullReport.style.display === 'none') {
+                fullReport.style.display = 'block';
+                toggleButton.querySelector('span:first-child').textContent = 'Hide Detailed Security Report';
+                toggleArrow.classList.add('expanded');
+                currentReportExpanded = true;
+            } else {
+                fullReport.style.display = 'none';
+                toggleButton.querySelector('span:first-child').textContent = 'Show Detailed Security Report';
+                toggleArrow.classList.remove('expanded');
+                currentReportExpanded = false;
+            }
+        }
+        
+        function renderFunctionList(functions, type) {
+            if (!functions || functions.length === 0) return '';
+            
+            return `
+                <div class="function-list">
+                    Detected ${type} functions: 
+                    ${functions.map(func => `<span>${func}</span>`).join('')}
+                </div>
+            `;
         }
         
         function showError(message) {
             document.getElementById('resultContainer').innerHTML = `
-                <div class="risk-card">
+                <div class="risk-card fade-in">
                     <div class="risk-header risk-medium">
-                        ⚠️ Analysis Error
+                        <i class="fas fa-exclamation-circle"></i>
+                        Analysis Error
                     </div>
                     <div class="check-item">
                         <div class="check-details">
@@ -669,16 +1259,33 @@
             `;
         }
         
-        // Поддержка Enter
         document.getElementById('contractAddress').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 analyzeContract();
             }
         });
         
-        // Инициализация фона при загрузке
         document.addEventListener('DOMContentLoaded', function() {
-            createAnimatedBackground();
+            createCyberBackground();
+            
+            // Анимация появления элементов при прокрутке
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.1
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('fade-in');
+                    }
+                });
+            }, observerOptions);
+            
+            document.querySelectorAll('.feature-card').forEach(card => {
+                observer.observe(card);
+            });
         });
     </script>
 </body>
