@@ -38,7 +38,7 @@ def is_cache_valid(timestamp):
     return datetime.now() - cached_time < CACHE_DURATION
 
 def analyze_contract_abi(contract_abi):
-    """Анализирует ABI контракта на наличие опасных функций"""
+    #Анализ ABI контракта
     results = {
         "has_mint": False,
         "has_ownership": False,
@@ -53,17 +53,17 @@ def analyze_contract_abi(contract_abi):
             name = item.get('name', '').lower()
             
 
-            # Mint проверка - только функции которые могут mint'ить
+            # Mint
             if name == 'mint' and len(item.get('inputs', [])) > 0:
                 results["has_mint"] = True
 
-            # Ownership проверка - только опасные функции
+            # Ownership
             owner_keywords = ['transferownership', 'renounceownership', 'setowner', 'updateowner']
             if any(keyword in name for keyword in owner_keywords):
                 results["has_ownership"] = True
                 results["owner_functions"].append(name)
 
-            # Tax проверка - только setter функции
+            # Hidden taxes
             tax_keywords = ['setfee', 'settax', 'updatefee', 'updatetax']
             if any(keyword in name for keyword in tax_keywords):
                 results["has_hidden_taxes"] = True
@@ -110,7 +110,7 @@ async def analyze_contract(contract_address: str):
             if analysis["has_ownership"]: risk_score += 40
             if analysis["has_hidden_taxes"]: risk_score += 30
             
-            # Если ничего не найдено - низкий риск
+            
             if risk_score == 0:
                 verdict = "✅ LOW RISK: No critical issues found"
             elif risk_score >= 70:
