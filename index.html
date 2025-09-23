@@ -720,6 +720,16 @@
             transition: width 0.3s ease;
         }
 
+        .premium-badge {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -846,7 +856,7 @@
                     <span>ORBIS</span>
                 </div>
                 <button class="cta-button" onclick="showAccountModal()" style="padding: 12px 24px; font-size: 14px;">
-                    <i class="fas fa-user"></i> Account
+                    <i class="fas fa-user"></i> <span id="userStatus">Account</span>
                 </button>
             </header>
 
@@ -955,6 +965,12 @@
                     0/5 requests
                 </div>
             </div>
+
+            <div id="premiumStatus" style="display: none; background: rgba(66, 190, 101, 0.1); padding: 15px; border-radius: 8px; border: 1px solid var(--success); margin-top: 15px;">
+                <i class="fas fa-crown" style="color: var(--success);"></i>
+                <span style="color: var(--success); font-weight: 600;">Premium Active</span>
+                <p style="color: rgba(255,255,255,0.7); font-size: 12px; margin: 5px 0 0 0;">You have unlimited scans</p>
+            </div>
             
             <button onclick="hideModal('apiKeyModal')" style="background: transparent; border: none; color: rgba(255,255,255,0.5); position: absolute; top: 15px; right: 15px; cursor: pointer; font-size: 18px;">
                 <i class="fas fa-times"></i>
@@ -1004,14 +1020,9 @@
         // Configuration - UPDATE THESE VALUES
         const API_BASE_URL = "https://your-backend-url.railway.app"; // Change to your backend URL
         const LEMON_SQUEEZY_CHECKOUT_URL = "https://your-store.lemonsqueezy.com/checkout/buy/your-product-id"; // Your Lemon Squeezy checkout URL
-        const SUPABASE_URL = "https://your-project.supabase.co"; // Your Supabase URL
-        const SUPABASE_KEY = "your-supabase-anon-key"; // Your Supabase anon key
 
         let currentUser = null;
         let currentReportExpanded = false;
-        
-        // Initialize Supabase
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         
         // Navigation functions
         function showScanner() {
@@ -1045,7 +1056,12 @@
         }
         
         function showAccountModal() {
-            showModal('accountModal');
+            const apiKey = localStorage.getItem('orbis_api_key');
+            if (apiKey) {
+                showApiKeyModal();
+            } else {
+                showModal('accountModal');
+            }
         }
         
         function showPaymentModal() {
@@ -1076,11 +1092,9 @@
                 const userData = await response.json();
                 currentUser = userData;
                 
-                // Save API key to localStorage
                 localStorage.setItem('orbis_api_key', userData.api_key);
                 localStorage.setItem('orbis_user_email', userData.email);
                 
-                // Update UI
                 hideModal('accountModal');
                 showApiKeyModal();
                 checkUserStatus();
@@ -1121,17 +1135,36 @@
                 if (response.ok) {
                     const stats = await response.json();
                     const used = stats.requests_today;
-                    const limit = stats.limits[stats.subscription?.plan_id || 'free'];
-                    const percent = (used / limit) * 100;
+                    const subscription = stats.subscription;
+                    const isPremium = subscription && subscription.plan_id === 'premium' && subscription.status === 'active';
+                    const limit = isPremium ? stats.limits.premium : stats.limits.free;
+                    const percent = Math.min((used / limit) * 100, 100);
                     
                     document.getElementById('limitProgressBar').style.width = `${percent}%`;
                     document.getElementById('limitText').textContent = `${used}/${limit} requests`;
+                    
+                    if (isPremium) {
+                        document.getElementById('premiumStatus').style.display = 'block';
+                        document.getElementById('limitText').innerHTML = `${used}/${limit} requests <span class="premium-badge">PREMIUM</span>`;
+                    } else {
+                        document.getElementById('premiumStatus').style.display = 'none';
+                    }
                     
                     // Update progress bar color based on usage
                     if (percent > 90) {
                         document.getElementById('limitProgressBar').style.background = 'var(--critical)';
                     } else if (percent > 60) {
                         document.getElementById('limitProgressBar').style.background = 'var(--warning)';
+                    } else {
+                        document.getElementById('limitProgressBar').style.background = 'var(--primary-gradient)';
+                    }
+
+                    // Update user status in header
+                    const userStatus = document.getElementById('userStatus');
+                    if (isPremium) {
+                        userStatus.innerHTML = 'Premium User <span class="premium-badge">PRO</span>';
+                    } else {
+                        userStatus.textContent = 'Account';
                     }
                 }
             } catch (error) {
@@ -1150,6 +1183,11 @@
         function openCheckout() {
             window.open(LEMON_SQUEEZY_CHECKOUT_URL, '_blank');
             hideModal('paymentModal');
+            
+            // Show instructions for webhook setup
+            setTimeout(() => {
+                alert('After payment, your account will be upgraded automatically within 5 minutes. Make sure to use the same email address you registered with!');
+            }, 1000);
         }
         
         // Contract analysis
@@ -1213,7 +1251,7 @@
                 }
                 
                 displayResults(data);
-                loadUserStats(); // Refresh usage stats
+                loadUserStats();
                 
             } catch (error) {
                 console.error('API error:', error);
@@ -1407,27 +1445,22 @@
         function createCyberBackground() {
             const background = document.getElementById('cyberBackground');
             
-            // Create grid lines
             const gridLines = document.createElement('div');
             gridLines.classList.add('grid-lines');
             background.appendChild(gridLines);
             
-            // Create cyber circles
             for (let i = 0; i < 8; i++) {
                 const circle = document.createElement('div');
                 circle.classList.add('cyber-circle');
-                
                 const size = Math.random() * 150 + 50;
                 circle.style.width = `${size}px`;
                 circle.style.height = `${size}px`;
                 circle.style.left = `${Math.random() * 100}%`;
                 circle.style.top = `${Math.random() * 100}%`;
                 circle.style.animationDelay = `${Math.random() * 5}s`;
-                
                 background.appendChild(circle);
             }
             
-            // Create cyber nodes
             for (let i = 0; i < 15; i++) {
                 const node = document.createElement('div');
                 node.classList.add('cyber-node');
@@ -1437,43 +1470,32 @@
                 background.appendChild(node);
             }
             
-            // Create floating shapes
             for (let i = 0; i < 6; i++) {
                 const shape = document.createElement('div');
                 shape.classList.add('floating-shape');
-                
                 const size = Math.random() * 100 + 50;
                 shape.style.width = `${size}px`;
                 shape.style.height = `${size}px`;
                 shape.style.left = `${Math.random() * 100}%`;
                 shape.style.top = `${Math.random() * 100}%`;
                 shape.style.animationDelay = `${Math.random() * 3}s`;
-                
-                if (Math.random() > 0.5) {
-                    shape.style.borderRadius = '50%';
-                }
-                
+                if (Math.random() > 0.5) shape.style.borderRadius = '50%';
                 background.appendChild(shape);
             }
         }
         
         // Event listeners
         document.getElementById('contractAddress').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                analyzeContract();
-            }
+            if (e.key === 'Enter') analyzeContract();
         });
         
         document.addEventListener('DOMContentLoaded', function() {
             createCyberBackground();
             checkUserStatus();
             
-            // Intersection observer for animations
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('fade-in');
-                    }
+                    if (entry.isIntersecting) entry.target.classList.add('fade-in');
                 });
             }, { threshold: 0.1 });
             
@@ -1482,8 +1504,5 @@
             });
         });
     </script>
-
-    <!-- Supabase CDN -->
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </body>
 </html>
