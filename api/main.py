@@ -42,7 +42,8 @@ class UserCreate(BaseModel):
 async def get_user_by_api_key(api_key: str):
     try:
         response = supabase.table('users').select('*').eq('api_key', api_key).execute()
-        return response.data[0] if response.data else None
+        # ИСПРАВЛЕНО: проверка на пустой массив
+        return response.data[0] if response.data and len(response.data) > 0 else None
     except Exception as e:
         logger.error(f"Error getting user: {e}")
         return None
@@ -55,7 +56,8 @@ async def check_rate_limit(user_id: str):
     request_count = response.count or 0
     
     sub_response = supabase.table('subscriptions').select('plan_id').eq('user_id', user_id).eq('status', 'active').execute()
-    plan = sub_response.data[0]['plan_id'] if sub_response.data else 'free'
+    # ИСПРАВЛЕНО: проверка на пустой массив
+    plan = sub_response.data[0]['plan_id'] if sub_response.data and len(sub_response.data) > 0 else 'free'
     
     limits = {'free': 5, 'premium': 1000}
     return request_count < limits.get(plan, 5)
@@ -103,6 +105,7 @@ def analyze_contract_abi(contract_abi):
 
 def verify_lemonsqueezy_webhook(payload: bytes, signature: str) -> bool:
     if not LEMON_SQUEEZY_WEBHOOK_SECRET:
+        logger.warning("Lemon Squeezy webhook secret not set")
         return True
         
     digest = hmac.new(
@@ -112,6 +115,18 @@ def verify_lemonsqueezy_webhook(payload: bytes, signature: str) -> bool:
     ).hexdigest()
     
     return hmac.compare_digest(digest, signature)
+
+def is_valid_ethereum_address(address: str) -> bool:
+    """Basic Ethereum address validation"""
+    if not address.startswith('0x'):
+        return False
+    if len(address) != 42:
+        return False
+    try:
+        int(address, 16)
+        return True
+    except ValueError:
+        return False
 
 @app.post("/analyze")
 async def analyze_contract(
@@ -129,6 +144,10 @@ async def analyze_contract(
     if not await check_rate_limit(user['id']):
         raise HTTPException(status_code=429, detail="Daily limit exceeded. Upgrade to Premium for unlimited access.")
     
+    # Валидация Ethereum адреса
+    if not is_valid_ethereum_address(request.contract_address):
+        raise HTTPException(status_code=400, detail="Invalid Ethereum address format")
+    
     client_ip = client_request.client.host if client_request else "unknown"
     await log_api_request(user['id'], client_ip, request.contract_address)
     
@@ -136,10 +155,10 @@ async def analyze_contract(
     abi_url = f"https://api.etherscan.io/api?module=contract&action=getabi&address={contract_address}&apikey={ETHERSCAN_API_KEY}"
     
     try:
-        response = requests.get(abi_url)
+        response = requests.get(abi_url, timeout=10)
         data = response.json()
         
-        if data['status'] != '1' or not data['result']:
+        if data.get('status') != '1' or not data.get('result'):
             result = {
                 "address": contract_address,
                 "analysis": {
@@ -151,7 +170,7 @@ async def analyze_contract(
                     "mint_functions": []
                 },
                 "risk_score": 0,
-                "verdict": "❓ Cannot analyze: Contract not verified",
+                "verdict": "❓ Cannot analyze: Contract not verified or ABI not available",
                 "source": "Etherscan API"
             }
         else:
@@ -182,24 +201,40 @@ async def analyze_contract(
         
         return result
         
+    except requests.exceptions.Timeout:
+        logger.error(f"Etherscan API timeout for address: {contract_address}")
+        raise HTTPException(status_code=408, detail="Etherscan API timeout. Please try again.")
+    except json.JSONDecodeError:
+        logger.error(f"Invalid JSON response from Etherscan for address: {contract_address}")
+        raise HTTPException(status_code=502, detail="Invalid response from Etherscan API.")
     except Exception as e:
-        logger.error(f"Analysis error: {e}")
+        logger.error(f"Analysis error for {contract_address}: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 @app.post("/create-user")
 async def create_user(user_data: UserCreate):
     try:
+        # Валидация email
+        if not user_data.email or '@' not in user_data.email:
+            raise HTTPException(status_code=400, detail="Valid email required")
+        
         existing_user = supabase.table('users').select('*').eq('email', user_data.email).execute()
         
-        if existing_user.data:
+        # ИСПРАВЛЕНО: проверка на пустой массив
+        if existing_user.data and len(existing_user.data) > 0:
             user = existing_user.data[0]
         else:
             new_user = supabase.table('users').insert({
                 'email': user_data.email,
                 'api_key': f"sk_{os.urandom(16).hex()}"
             }).execute()
+            
+            if not new_user.data or len(new_user.data) == 0:
+                raise HTTPException(status_code=500, detail="Failed to create user")
+                
             user = new_user.data[0]
             
+            # Создаем бесплатную подписку по умолчанию
             supabase.table('subscriptions').insert({
                 'user_id': user['id'],
                 'status': 'active',
@@ -208,6 +243,8 @@ async def create_user(user_data: UserCreate):
         
         return {"api_key": user['api_key'], "email": user['email']}
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"User creation error: {e}")
         raise HTTPException(status_code=500, detail="Failed to create user")
@@ -228,7 +265,7 @@ async def get_user_stats(x_api_key: str = Header(None)):
     requests_today = response.count or 0
     
     sub_response = supabase.table('subscriptions').select('*').eq('user_id', user['id']).execute()
-    subscription = sub_response.data[0] if sub_response.data else None
+    subscription = sub_response.data[0] if sub_response.data and len(sub_response.data) > 0 else None
     
     return {
         "email": user['email'],
@@ -247,6 +284,7 @@ async def lemon_webhook(request: Request):
         signature = request.headers.get('x-signature')
         
         if not verify_lemonsqueezy_webhook(body, signature):
+            logger.warning("Invalid webhook signature")
             raise HTTPException(status_code=401, detail="Invalid signature")
         
         payload = json.loads(body)
@@ -255,23 +293,31 @@ async def lemon_webhook(request: Request):
         
         logger.info(f"Received webhook: {event_name}")
         
-        if event_name in ['subscription_created', 'subscription_updated']:
+        if event_name in ['subscription_created', 'subscription_updated', 'subscription_payment_success']:
             customer_email = data['attributes']['user_email']
             sub_id = data['id']
             status = data['attributes']['status']
             
             user_response = supabase.table('users').select('*').eq('email', customer_email).execute()
-            if user_response.data:
+            # ИСПРАВЛЕНО: проверка на пустой массив
+            if user_response.data and len(user_response.data) > 0:
                 user = user_response.data[0]
             else:
+                # Создаем пользователя если не существует
                 new_user = supabase.table('users').insert({
                     'email': customer_email,
                     'api_key': f"sk_{os.urandom(16).hex()}"
                 }).execute()
+                
+                if not new_user.data or len(new_user.data) == 0:
+                    logger.error(f"Failed to create user for webhook: {customer_email}")
+                    raise HTTPException(status_code=500, detail="Failed to create user")
+                    
                 user = new_user.data[0]
             
             plan_id = 'premium' if status in ['active', 'trialing'] else 'free'
             
+            # Обновляем или создаем подписку
             supabase.table('subscriptions').upsert({
                 'user_id': user['id'],
                 'status': status,
@@ -280,13 +326,22 @@ async def lemon_webhook(request: Request):
                 'current_period_end': datetime.now(timezone.utc) + timedelta(days=30)
             }).execute()
             
-            logger.info(f"Subscription updated for {customer_email}: {status}")
+            logger.info(f"Subscription updated for {customer_email}: {status} -> {plan_id}")
         
         return JSONResponse(status_code=200, content={"status": "success"})
         
     except Exception as e:
         logger.error(f"Webhook error: {e}")
         raise HTTPException(status_code=500, detail="Webhook processing failed")
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for monitoring"""
+    return {
+        "status": "healthy", 
+        "version": "4.0",
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
 
 @app.get("/")
 async def root():
