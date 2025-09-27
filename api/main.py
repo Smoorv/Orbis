@@ -42,7 +42,6 @@ class UserCreate(BaseModel):
 async def get_user_by_api_key(api_key: str):
     try:
         response = supabase.table('users').select('*').eq('api_key', api_key).execute()
-        # ИСПРАВЛЕНО: проверка на пустой массив
         return response.data[0] if response.data and len(response.data) > 0 else None
     except Exception as e:
         logger.error(f"Error getting user: {e}")
@@ -56,7 +55,6 @@ async def check_rate_limit(user_id: str):
     request_count = response.count or 0
     
     sub_response = supabase.table('subscriptions').select('plan_id').eq('user_id', user_id).eq('status', 'active').execute()
-    # ИСПРАВЛЕНО: проверка на пустой массив
     plan = sub_response.data[0]['plan_id'] if sub_response.data and len(sub_response.data) > 0 else 'free'
     
     limits = {'free': 5, 'premium': 1000}
@@ -143,8 +141,8 @@ async def analyze_contract(
     
     if not await check_rate_limit(user['id']):
         raise HTTPException(status_code=429, detail="Daily limit exceeded. Upgrade to Premium for unlimited access.")
+
     
-    # Валидация Ethereum адреса
     if not is_valid_ethereum_address(request.contract_address):
         raise HTTPException(status_code=400, detail="Invalid Ethereum address format")
     
@@ -214,13 +212,12 @@ async def analyze_contract(
 @app.post("/create-user")
 async def create_user(user_data: UserCreate):
     try:
-        # Валидация email
         if not user_data.email or '@' not in user_data.email:
             raise HTTPException(status_code=400, detail="Valid email required")
         
         existing_user = supabase.table('users').select('*').eq('email', user_data.email).execute()
         
-        # ИСПРАВЛЕНО: проверка на пустой массив
+
         if existing_user.data and len(existing_user.data) > 0:
             user = existing_user.data[0]
         else:
@@ -234,7 +231,7 @@ async def create_user(user_data: UserCreate):
                 
             user = new_user.data[0]
             
-            # Создаем бесплатную подписку по умолчанию
+           
             supabase.table('subscriptions').insert({
                 'user_id': user['id'],
                 'status': 'active',
@@ -299,11 +296,11 @@ async def lemon_webhook(request: Request):
             status = data['attributes']['status']
             
             user_response = supabase.table('users').select('*').eq('email', customer_email).execute()
-            # ИСПРАВЛЕНО: проверка на пустой массив
+            
             if user_response.data and len(user_response.data) > 0:
                 user = user_response.data[0]
             else:
-                # Создаем пользователя если не существует
+                
                 new_user = supabase.table('users').insert({
                     'email': customer_email,
                     'api_key': f"sk_{os.urandom(16).hex()}"
@@ -317,7 +314,7 @@ async def lemon_webhook(request: Request):
             
             plan_id = 'premium' if status in ['active', 'trialing'] else 'free'
             
-            # Обновляем или создаем подписку
+            
             supabase.table('subscriptions').upsert({
                 'user_id': user['id'],
                 'status': status,
