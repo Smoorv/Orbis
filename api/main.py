@@ -11,6 +11,8 @@ import hmac
 from supabase import create_client, Client
 import logging
 from dotenv import load_dotenv
+import threading
+import time
 
 load_dotenv()
 
@@ -30,6 +32,7 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 ETHERSCAN_API_KEY = os.getenv("ETHERSCAN_API_KEY")
 LEMON_SQUEEZY_WEBHOOK_SECRET = os.getenv("LEMON_SQUEEZY_WEBHOOK_SECRET")
+RENDER_URL = os.getenv("RENDER_URL", "")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
@@ -38,6 +41,21 @@ class ContractAnalysisRequest(BaseModel):
 
 class UserCreate(BaseModel):
     email: str
+
+def keep_alive():
+    def ping():
+        while True:
+            try:
+                base_url = RENDER_URL or f"https://{os.getenv('RENDER_INSTANCE_ID', '')}.onrender.com"
+                if base_url.startswith('http'):
+                    requests.get(f"{base_url}/health", timeout=10)
+                    logger.info("✅ Keep-alive ping sent")
+            except Exception as e:
+                logger.info(f"❌ Ping failed: {e}")
+            time.sleep(600)
+    
+    thread = threading.Thread(target=ping, daemon=True)
+    thread.start()
 
 async def get_user_by_api_key(api_key: str):
     try:
@@ -217,7 +235,6 @@ async def create_user(user_data: UserCreate):
         
         existing_user = supabase.table('users').select('*').eq('email', user_data.email).execute()
         
-
         if existing_user.data and len(existing_user.data) > 0:
             user = existing_user.data[0]
         else:
@@ -231,7 +248,6 @@ async def create_user(user_data: UserCreate):
                 
             user = new_user.data[0]
             
-           
             supabase.table('subscriptions').insert({
                 'user_id': user['id'],
                 'status': 'active',
@@ -300,7 +316,6 @@ async def lemon_webhook(request: Request):
             if user_response.data and len(user_response.data) > 0:
                 user = user_response.data[0]
             else:
-                
                 new_user = supabase.table('users').insert({
                     'email': customer_email,
                     'api_key': f"sk_{os.urandom(16).hex()}"
@@ -313,7 +328,6 @@ async def lemon_webhook(request: Request):
                 user = new_user.data[0]
             
             plan_id = 'premium' if status in ['active', 'trialing'] else 'free'
-            
             
             supabase.table('subscriptions').upsert({
                 'user_id': user['id'],
@@ -343,6 +357,8 @@ async def health_check():
 @app.get("/")
 async def root():
     return {"message": "Orbis Scanner API is running", "version": "4.0"}
+
+keep_alive()
 
 if __name__ == "__main__":
     import uvicorn
