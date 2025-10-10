@@ -75,7 +75,7 @@ async def check_rate_limit(user_id: str):
     sub_response = supabase.table('subscriptions').select('plan_id').eq('user_id', user_id).eq('status', 'active').execute()
     plan = sub_response.data[0]['plan_id'] if sub_response.data and len(sub_response.data) > 0 else 'free'
     
-    limits = {'free': 5, 'premium': 1000}
+    limits = {'free': 3, 'premium': 1000}
     return request_count < limits.get(plan, 5)
 
 async def log_api_request(user_id: str, ip_address: str, contract_address: str):
