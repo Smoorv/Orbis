@@ -313,6 +313,29 @@
             transform: translateY(0);
         }
 
+        .upgrade-btn {
+            padding: 12px 24px;
+            background: transparent;
+            border: 2px solid var(--primary);
+            border-radius: var(--radius-md);
+            color: var(--primary);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 15px;
+        }
+
+        .upgrade-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(15, 98, 254, 0.3);
+        }
+
         .features {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -374,6 +397,12 @@
             padding: 24px 0;
             margin-bottom: 40px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
 
         .scanner-card {
@@ -664,22 +693,30 @@
             backdrop-filter: blur(5px);
             justify-content: center;
             align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .modal-content {
             background: #1a1a2e;
-            padding: 30px;
-            border-radius: 16px;
+            padding: 40px;
+            border-radius: 20px;
             border: 1px solid var(--primary);
             max-width: 500px;
             width: 90%;
             text-align: center;
-            animation: modalSlideIn 0.3s ease-out;
+            animation: modalSlideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
         }
 
         @keyframes modalSlideIn {
-            from { opacity: 0; transform: translateY(-50px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: translateY(-50px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .api-key-display {
@@ -730,6 +767,90 @@
             margin-left: 10px;
         }
 
+        .upgrade-offer {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .upgrade-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #ff375f 0%, #ff6b35 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 2rem;
+            color: white;
+        }
+
+        .plan-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .plan-column {
+            padding: 20px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .plan-column.current {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .plan-column.upgrade {
+            border: 1px solid var(--primary);
+            background: rgba(15, 98, 254, 0.05);
+        }
+
+        .plan-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .plan-name.current {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .plan-name.upgrade {
+            color: var(--primary);
+        }
+
+        .feature-compare {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+        }
+
+        .feature-compare i {
+            width: 16px;
+            text-align: center;
+        }
+
+        .upgrade-price {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 20px 0;
+            background: linear-gradient(135deg, #fff 0%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .upgrade-subtitle {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+            margin-bottom: 25px;
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -755,6 +876,9 @@
             .check-item { padding: 20px; }
             .footer { flex-direction: column; gap: 16px; text-align: center; }
             .footer-links { justify-content: center; }
+            .plan-comparison { grid-template-columns: 1fr; }
+            .header-actions { flex-direction: column; gap: 10px; }
+            .upgrade-btn { margin-left: 0; margin-top: 10px; }
         }
 
         @media (max-width: 480px) {
@@ -767,6 +891,7 @@
             .risk-header { padding: 20px; }
             .danger-banner { margin: 16px 20px; }
             .toggle-report { width: calc(100% - 40px); margin: 16px 20px; }
+            .modal-content { padding: 30px 20px; }
         }
     </style>
 </head>
@@ -855,9 +980,15 @@
                     <div class="logo-icon">O</div>
                     <span>ORBIS</span>
                 </div>
-                <button class="cta-button" onclick="showAccountModal()" style="padding: 12px 24px; font-size: 14px;">
-                    <i class="fas fa-user"></i> <span id="userStatus">Account</span>
-                </button>
+                <div class="header-actions">
+                    <button class="upgrade-btn" onclick="showPaymentModal()" id="upgradeButton" style="display: none;">
+                        <i class="fas fa-crown"></i> Upgrade to PRO
+                    </button>
+                    <button class="cta-button" onclick="showAccountModal()" style="padding: 12px 24px; font-size: 14px;">
+                        <i class="fas fa-user"></i> <span id="userStatus">Account</span>
+                        <span id="proBadge" class="premium-badge" style="display: none;">PRO</span>
+                    </button>
+                </div>
             </header>
 
             <section class="hero">
@@ -886,7 +1017,7 @@
                 
                 <div style="text-align: center;">
                     <div style="margin-bottom: 16px;">
-                        <div style="font-size: 2.5rem; font-weight: bold; color: var(--primary);">$7<span style="font-size: 1rem; color: rgba(255,255,255,0.6);">/month</span></div>
+                        <div style="font-size: 2.5rem; font-weight: bold; color: var(--primary);">$15<span style="font-size: 1rem; color: rgba(255,255,255,0.6);">/month</span></div>
                         <ul style="text-align: left; margin: 20px auto; display: inline-block; color: rgba(255,255,255,0.8);">
                             <li>Unlimited contract scans</li>
                             <li>Priority analysis</li>
@@ -962,7 +1093,7 @@
                     <div class="limit-progress-bar" id="limitProgressBar" style="width: 0%;"></div>
                 </div>
                 <div style="font-size: 12px; color: rgba(255,255,255,0.6);" id="limitText">
-                    0/5 requests
+                    0/3 requests
                 </div>
             </div>
 
@@ -978,48 +1109,136 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="paymentModal">
+    <div class="modal-overlay" id="upgradeModal">
         <div class="modal-content">
-            <h3 style="color: var(--primary); margin-bottom: 20px;">
-                <i class="fas fa-crown"></i> Upgrade to Premium
-            </h3>
-            
-            <p style="color: rgba(255,255,255,0.7); margin-bottom: 25px;">
-                Get unlimited scans and advanced features for just $7/month.
-            </p>
-            
-            <div style="background: rgba(0,0,0,0.3); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <span style="color: rgba(255,255,255,0.8);">Premium Plan</span>
-                    <span style="color: var(--primary); font-weight: bold;">$7/month</span>
+            <div class="upgrade-offer">
+                <div class="upgrade-icon">
+                    <i class="fas fa-hourglass-end"></i>
                 </div>
-                <ul style="text-align: left; color: rgba(255,255,255,0.7); font-size: 14px; line-height: 1.6;">
-                    <li>✓ Unlimited contract scans</li>
-                    <li>✓ Priority analysis queue</li>
-                    <li>✓ Full detailed reports</li>
-                    <li>✓ Early access to new features</li>
-                    <li>✓ Email support</li>
-                </ul>
+                
+                <h2 style="color: #ff6b35; margin-bottom: 16px;">Daily Scan Limit Reached</h2>
+                <p class="upgrade-subtitle">You've used all 3 free scans today. Upgrade to PRO for unlimited security analysis.</p>
+                
+                <div class="plan-comparison">
+                    <div class="plan-column current">
+                        <div class="plan-name current">Free Plan</div>
+                        <div class="feature-compare">
+                            <i class="fas fa-times"></i>
+                            <span>3 scans/day limit</span>
+                        </div>
+                        <div class="feature-compare">
+                            <i class="fas fa-check"></i>
+                            <span>Basic security checks</span>
+                        </div>
+                        <div class="feature-compare">
+                            <i class="fas fa-times"></i>
+                            <span>Standard queue</span>
+                        </div>
+                    </div>
+                    
+                    <div class="plan-column upgrade">
+                        <div class="plan-name upgrade">PRO Plan</div>
+                        <div class="feature-compare">
+                            <i class="fas fa-infinity"></i>
+                            <span>Unlimited scans</span>
+                        </div>
+                        <div class="feature-compare">
+                            <i class="fas fa-check"></i>
+                            <span>Advanced detection</span>
+                        </div>
+                        <div class="feature-compare">
+                            <i class="fas fa-check"></i>
+                            <span>Priority processing</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="upgrade-price">$15<span style="font-size: 1rem; color: rgba(255,255,255,0.6);">/month</span></div>
+                <div class="upgrade-subtitle">Cancel anytime • 7-day money back</div>
+                
+                <button class="scan-btn" onclick="showPaymentModal(); hideModal('upgradeModal');" style="margin-bottom: 15px;">
+                    <i class="fas fa-crown"></i> Upgrade to PRO - Unlimited Access
+                </button>
+                
+                <button class="scan-btn" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.7);" onclick="hideModal('upgradeModal')">
+                    <i class="fas fa-clock"></i> Continue with Free Plan
+                </button>
             </div>
             
-            <button onclick="openCheckout()" class="scan-btn" style="width: 100%; margin-bottom: 15px; background: var(--primary-gradient);">
-                <i class="fas fa-credit-card"></i> Subscribe with Lemon Squeezy
+            <button onclick="hideModal('upgradeModal')" style="background: transparent; border: none; color: rgba(255,255,255,0.5); position: absolute; top: 15px; right: 15px; cursor: pointer; font-size: 18px;">
+                <i class="fas fa-times"></i>
             </button>
+        </div>
+    </div>
+
+    <!-- Payment Options Modal -->
+    <div class="modal-overlay" id="paymentOptionsModal">
+        <div class="modal-content">
+            <h3 style="color: var(--primary); margin-bottom: 20px;">
+                <i class="fas fa-credit-card"></i> Choose Payment Method
+            </h3>
             
-            <p style="font-size: 12px; color: rgba(255,255,255,0.5);">
-                You'll be redirected to our secure payment partner.
+            <p style="color: rgba(255,255,255,0.7); margin-bottom: 30px;">
+                Upgrade to PRO for $15/month. Select your preferred payment method.
             </p>
+
+            <!-- CryptoCloud Option -->
+            <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-md); padding: 20px; margin-bottom: 15px; cursor: pointer; transition: all 0.3s ease;"
+                 onclick="payWithCryptoCloud()"
+                 onmouseover="this.style.borderColor='var(--primary)'; this.style.background='rgba(15, 98, 254, 0.05)';" 
+                 onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'; this.style.background='rgba(255,255,255,0.05)';">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-coins" style="color: #000; font-size: 1.3rem;"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; margin-bottom: 5px; color: white;">CryptoCloud</div>
+                        <div style="font-size: 0.9rem; color: rgba(255,255,255,0.7);">
+                            Cards (RU), SBP, Crypto • Instant activation
+                        </div>
+                    </div>
+                    <i class="fas fa-chevron-right" style="color: rgba(255,255,255,0.5);"></i>
+                </div>
+            </div>
+
+            <!-- Stripe Option -->
+            <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-md); padding: 20px; margin-bottom: 25px; cursor: pointer; transition: all 0.3s ease;"
+                 onclick="payWithStripe()"
+                 onmouseover="this.style.borderColor='var(--primary)'; this.style.background='rgba(15, 98, 254, 0.05)';" 
+                 onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'; this.style.background='rgba(255,255,255,0.05)';">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #635bff 0%, #5a67d8 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fab fa-stripe-s" style="color: white; font-size: 1.5rem;"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; margin-bottom: 5px; color: white;">Stripe</div>
+                        <div style="font-size: 0.9rem; color: rgba(255,255,255,0.7);">
+                            International Cards • Worldwide
+                        </div>
+                    </div>
+                    <i class="fas fa-chevron-right" style="color: rgba(255,255,255,0.5);"></i>
+                </div>
+            </div>
+
+            <!-- Price & Guarantee -->
+            <div style="text-align: center;">
+                <div style="font-size: 2rem; font-weight: 700; color: white; margin-bottom: 5px;">
+                    $15<span style="font-size: 1rem; color: rgba(255,255,255,0.6);">/month</span>
+                </div>
+                <div style="color: rgba(255,255,255,0.6); font-size: 0.9rem; margin-bottom: 20px;">
+                    Cancel anytime • 7-day money back guarantee
+                </div>
+            </div>
             
-            <button onclick="hideModal('paymentModal')" style="background: transparent; border: none; color: rgba(255,255,255,0.5); position: absolute; top: 15px; right: 15px; cursor: pointer; font-size: 18px;">
+            <button onclick="hideModal('paymentOptionsModal')" style="background: transparent; border: none; color: rgba(255,255,255,0.5); position: absolute; top: 15px; right: 15px; cursor: pointer; font-size: 18px;">
                 <i class="fas fa-times"></i>
             </button>
         </div>
     </div>
 
     <script>
-        // Configuration - UPDATE THESE VALUES
-        const API_BASE_URL = "https://your-backend-url.railway.app"; // Change to your backend URL
-        const LEMON_SQUEEZY_CHECKOUT_URL = "https://your-store.lemonsqueezy.com/checkout/buy/your-product-id"; // Your Lemon Squeezy checkout URL
+        // Configuration
+        const API_BASE_URL = "https://your-backend-url.railway.app";
 
         let currentUser = null;
         let currentReportExpanded = false;
@@ -1065,7 +1284,16 @@
         }
         
         function showPaymentModal() {
-            showModal('paymentModal');
+            const apiKey = localStorage.getItem('orbis_api_key');
+            if (!apiKey) {
+                showAccountModal();
+                return;
+            }
+            showModal('paymentOptionsModal');
+        }
+
+        function showUpgradeModal() {
+            showModal('upgradeModal');
         }
         
         // User management
@@ -1161,10 +1389,17 @@
 
                     // Update user status in header
                     const userStatus = document.getElementById('userStatus');
+                    const proBadge = document.getElementById('proBadge');
+                    const upgradeButton = document.getElementById('upgradeButton');
+                    
                     if (isPremium) {
-                        userStatus.innerHTML = 'Premium User <span class="premium-badge">PRO</span>';
+                        userStatus.innerHTML = 'Account';
+                        proBadge.style.display = 'inline-block';
+                        upgradeButton.style.display = 'none';
                     } else {
                         userStatus.textContent = 'Account';
+                        proBadge.style.display = 'none';
+                        upgradeButton.style.display = 'inline-flex';
                     }
                 }
             } catch (error) {
@@ -1180,14 +1415,126 @@
             }
         }
         
-        function openCheckout() {
-            window.open(LEMON_SQUEEZY_CHECKOUT_URL, '_blank');
-            hideModal('paymentModal');
-            
-            // Show instructions for webhook setup
-            setTimeout(() => {
-                alert('After payment, your account will be upgraded automatically within 5 minutes. Make sure to use the same email address you registered with!');
-            }, 1000);
+        // Payment functions
+        async function payWithCryptoCloud() {
+            const userEmail = localStorage.getItem('orbis_user_email');
+            if (!userEmail) {
+                alert('Please create an account first');
+                showAccountModal();
+                return;
+            }
+
+            // Show loading
+            const originalContent = document.querySelector('#paymentOptionsModal .modal-content').innerHTML;
+            document.querySelector('#paymentOptionsModal .modal-content').innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <div style="color: var(--primary); font-size: 1.1rem; margin-bottom: 16px;">
+                        <i class="fas fa-spinner fa-spin"></i> Preparing CryptoCloud Payment...
+                    </div>
+                    <div style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem;">
+                        Connecting to payment service
+                    </div>
+                </div>
+            `;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/create-cryptocloud-payment`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': localStorage.getItem('orbis_api_key')
+                    },
+                    body: JSON.stringify({
+                        user_email: userEmail,
+                        amount: 15.0,
+                        currency: "USD"
+                    })
+                });
+
+                if (response.ok) {
+                    const payment = await response.json();
+                    localStorage.setItem('pending_payment_id', payment.payment_id);
+                    
+                    // Open payment page
+                    setTimeout(() => {
+                        window.open(payment.payment_url, '_blank');
+                        hideModal('paymentOptionsModal');
+                        
+                        // Notification
+                        setTimeout(() => {
+                            alert('Payment page opened! Complete the payment to activate PRO features.');
+                        }, 500);
+                    }, 1000);
+                    
+                } else {
+                    throw new Error('Payment creation failed');
+                }
+            } catch (error) {
+                console.error('CryptoCloud error:', error);
+                // Restore content
+                document.querySelector('#paymentOptionsModal .modal-content').innerHTML = originalContent;
+                alert('CryptoCloud temporarily unavailable. Please try Stripe.');
+            }
+        }
+
+        async function payWithStripe() {
+            const userEmail = localStorage.getItem('orbis_user_email');
+            if (!userEmail) {
+                alert('Please create an account first');
+                showAccountModal();
+                return;
+            }
+
+            // Show loading
+            const originalContent = document.querySelector('#paymentOptionsModal .modal-content').innerHTML;
+            document.querySelector('#paymentOptionsModal .modal-content').innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <div style="color: var(--primary); font-size: 1.1rem; margin-bottom: 16px;">
+                        <i class="fas fa-spinner fa-spin"></i> Preparing Stripe Payment...
+                    </div>
+                    <div style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem;">
+                        Connecting to payment service
+                    </div>
+                </div>
+            `;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/create-stripe-payment`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json', 
+                        'X-API-Key': localStorage.getItem('orbis_api_key')
+                    },
+                    body: JSON.stringify({
+                        user_email: userEmail,
+                        amount: 15.0,
+                        currency: "USD"
+                    })
+                });
+
+                if (response.ok) {
+                    const payment = await response.json();
+                    
+                    // Open Stripe Checkout
+                    setTimeout(() => {
+                        window.open(payment.payment_url, '_blank');
+                        hideModal('paymentOptionsModal');
+                        
+                        // Notification
+                        setTimeout(() => {
+                            alert('Stripe checkout opened! Complete the payment to activate PRO features.');
+                        }, 500);
+                    }, 1000);
+                    
+                } else {
+                    throw new Error('Stripe payment creation failed');
+                }
+            } catch (error) {
+                console.error('Stripe error:', error);
+                // Restore content
+                document.querySelector('#paymentOptionsModal .modal-content').innerHTML = originalContent;
+                alert('Stripe temporarily unavailable. Please try CryptoCloud.');
+            }
         }
         
         // Contract analysis
@@ -1234,8 +1581,7 @@
                 });
                 
                 if (response.status === 429) {
-                    document.getElementById('premiumCard').style.display = 'block';
-                    showError("Daily limit exceeded. Upgrade to Premium for unlimited scans.");
+                    showUpgradeModal();
                     return;
                 }
                 
@@ -1256,8 +1602,7 @@
             } catch (error) {
                 console.error('API error:', error);
                 if (error.message.includes('429')) {
-                    document.getElementById('premiumCard').style.display = 'block';
-                    showError("Daily limit exceeded. Upgrade to Premium for unlimited scans.");
+                    showUpgradeModal();
                 } else {
                     showError('Failed to connect to security API. Please try again later.');
                 }
